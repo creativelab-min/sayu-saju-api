@@ -1,6 +1,5 @@
 fastapi
 uvicorn[standard]
 lunar-python
-pydantic
-python-multipart
 geopy
+pydantic
