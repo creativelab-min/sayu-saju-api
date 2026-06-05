@@ -1,13 +1,13 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from datetime import datetime
-from lunar_python import Solar
+from lunar_python import Solar, Lunar
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderServiceError
 
 app = FastAPI(title="Sayu Saju API", description="Gentle mirror for self-understanding")
 
-# === TRANSLATIONS ===
+# Translations
 stem_english = {
     "甲": "Jia (Yang Wood)", "乙": "Yi (Yin Wood)", "丙": "Bing (Yang Fire)",
     "丁": "Ding (Yin Fire)", "戊": "Wu (Yang Earth)", "己": "Ji (Yin Earth)",
@@ -26,18 +26,6 @@ element_map = {
     "庚":"Metal", "辛":"Metal", "壬":"Water", "癸":"Water"
 }
 
-# === COMPLETE TEN GODS MAP ===
-ten_gods_map = {
-    "甲": {"甲":"Friend", "乙":"Rob Wealth", "丙":"Eating God", "丁":"Hurting Officer",
-           "戊":"Indirect Wealth", "己":"Direct Wealth", "庚":"Seven Killings", "辛":"Direct Officer",
-           "壬":"Indirect Resource", "癸":"Direct Resource"},
-    "乙": {"甲":"Rob Wealth", "乙":"Friend", "丙":"Hurting Officer", "丁":"Eating God",
-           "戊":"Direct Wealth", "己":"Indirect Wealth", "庚":"Direct Officer", "辛":"Seven Killings",
-           "壬":"Direct Resource", "癸":"Indirect Resource"},
-    # (Full map from previous version - abbreviated here for brevity, use the full one from earlier message)
-    # ... paste the full ten_gods_map from the earlier complete version if needed
-}
-
 class BirthData(BaseModel):
     name: str = "User"
     year: int
@@ -47,6 +35,7 @@ class BirthData(BaseModel):
     minute: int = 0
     gender: str = "male"
     birthplace: str = "Vancouver, Canada"
+    is_lunar: bool = False   # New: True if input is Lunar calendar
 
 @app.post("/calculate-saju")
 async def calculate_saju(data: BirthData):
@@ -62,8 +51,14 @@ async def calculate_saju(data: BirthData):
             longitude = latitude = 0
             location_name = data.birthplace
 
-        solar = Solar.fromYmdHms(data.year, data.month, data.day, data.hour, data.minute, 0)
-        lunar = solar.getLunar()
+        # === LUNAR / SOLAR HANDLING ===
+        if data.is_lunar:
+            lunar = Lunar.fromYMDHMS(data.year, data.month, data.day, data.hour, data.minute, 0)
+            solar = lunar.getSolar()
+        else:
+            solar = Solar.fromYmdHms(data.year, data.month, data.day, data.hour, data.minute, 0)
+            lunar = solar.getLunar()
+
         eight_char = lunar.getEightChar()
 
         day_master_stem = eight_char.getDayGan()
@@ -85,19 +80,17 @@ async def calculate_saju(data: BirthData):
                 "branch": branch,
                 "branch_english": branch_english.get(branch, branch),
                 "hidden_stems": hidden_stems,
-                "hidden_stems_english": [stem_english.get(h, h) for h in hidden_stems],
-                "ten_god": ten_gods_map.get(day_master_stem, {}).get(stem, "N/A")
+                "hidden_stems_english": [stem_english.get(h, h) for h in hidden_stems]
             }
 
-        # Element Distribution (including hidden stems)
+        # Elements + Luck Cycles (same as before)
         all_stems = [p["stem"] for p in pillars.values()] + [hs for p in pillars.values() for hs in p["hidden_stems"]]
         elements = {el: all_stems.count(st) for st, el in element_map.items() if st in all_stems}
 
-        # Luck Cycles (DaYun)
+        # Luck Cycles
         gender_value = 1 if data.gender.lower() == "male" else 0
         yun = eight_char.getYun(gender_value)
         da_yun_list = yun.getDaYun()
-
         luck_cycles = []
         for i, dy in enumerate(da_yun_list[:8]):
             gz = dy.getGanZhi()
@@ -116,6 +109,7 @@ async def calculate_saju(data: BirthData):
                 "name": data.name,
                 "gender": data.gender,
                 "birthplace": location_name,
+                "input_type": "Lunar" if data.is_lunar else "Solar",
                 "longitude": longitude
             },
             "pillars": pillars,
