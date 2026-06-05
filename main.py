@@ -5,7 +5,7 @@ from lunar_python import Solar
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderServiceError
 
-app = FastAPI(title="Sayu Saju API", description="Accurate Four Pillars calculator")
+app = FastAPI(title="Sayu Saju API")
 
 class BirthData(BaseModel):
     name: str = "User"
@@ -31,16 +31,13 @@ async def calculate_saju(data: BirthData):
             longitude = latitude = 0
             location_name = data.birthplace
 
-        # Create date with time
+        # Solar date with time
         solar = Solar.fromYmdHms(data.year, data.month, data.day, data.hour, data.minute, 0)
         lunar = solar.getLunar()
         eight_char = lunar.getEightChar()
 
-        element_map = {
-            "甲": "Wood", "乙": "Wood", "丙": "Fire", "丁": "Fire",
-            "戊": "Earth", "己": "Earth", "庚": "Metal", "辛": "Metal",
-            "壬": "Water", "癸": "Water"
-        }
+        element_map = {"甲":"Wood","乙":"Wood","丙":"Fire","丁":"Fire","戊":"Earth","己":"Earth",
+                       "庚":"Metal","辛":"Metal","壬":"Water","癸":"Water"}
 
         pillars = {
             "year": {"stem": eight_char.getYearGan(), "branch": eight_char.getYearZhi()},
@@ -49,28 +46,14 @@ async def calculate_saju(data: BirthData):
             "hour": {"stem": eight_char.getTimeGan(), "branch": eight_char.getTimeZhi()}
         }
 
-        day_master = eight_char.getDayGan()
-        day_element = element_map.get(day_master, "Unknown")
-
         response = {
             "status": "success",
-            "user_metadata": {
-                "name": data.name,
-                "gender": data.gender,
-                "birthplace": location_name,
-                "longitude": longitude,
-                "latitude": latitude
-            },
+            "user": {"name": data.name, "gender": data.gender, "birthplace": location_name},
             "pillars": pillars,
-            "day_master": {
-                "stem": day_master,
-                "element": day_element
-            },
-            "five_elements_count": {"Wood": 0, "Fire": 0, "Earth": 0, "Metal": 0, "Water": 0},  # placeholder
-            "raw_lunar": lunar.toFullString(),
+            "day_master": eight_char.getDayGan(),
+            "raw_output": lunar.toFullString()[:500],  # truncated
             "timestamp": datetime.now().isoformat()
         }
-
         return response
 
     except Exception as e:
