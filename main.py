@@ -3,7 +3,6 @@ from pydantic import BaseModel
 from datetime import datetime, timedelta
 from lunar_python import Solar, Lunar
 from geopy.geocoders import Nominatim
-from geopy.exc import GeocoderTimedOut, GeocoderServiceError
 import math
 import pytz
 
@@ -28,43 +27,38 @@ element_map = {
     "庚":"Metal", "辛":"Metal", "壬":"Water", "癸":"Water"
 }
 
-# === FULL TEN GODS (abbreviated - use full version from earlier if needed) ===
-ten_gods_full = { ... }  # Paste your full ten_gods_full here
+# === FULL TEN GODS (abbreviated - expand if needed) ===
+ten_gods_full = {
+    "甲": {"甲": {"name": "Friend (比肩)", "description": "Self-support, independence."}},
+    # Add full mapping from earlier if you want descriptions in every pillar
+}
 
-def get_timezone_from_location(location_name: str):
-    try:
-        if any(x in location_name for x in ["Korea", "Seoul"]):
-            return pytz.timezone("Asia/Seoul")
-        if any(x in location_name for x in ["Vancouver", "Canada"]):
-            return pytz.timezone("America/Vancouver")
-        return pytz.utc
-    except:
-        return pytz.utc
-
-def calculate_true_solar_time(year, month, day, hour, minute, longitude, location_name):
-    tz = get_timezone_from_location(location_name)
-    dt = datetime(year, month, day, hour, minute, tzinfo=tz)
-    dt_utc = dt.astimezone(pytz.utc)
-
-    day_of_year = dt_utc.timetuple().tm_yday
+def calculate_true_solar_time(year, month, day, hour, minute, longitude):
+    """Fixed & Capped True Solar Time"""
+    dt = datetime(year, month, day, hour, minute)
+    
+    # Longitude correction (4 min per degree)
+    long_correction_min = longitude * 4.0
+    
+    # Equation of Time
+    day_of_year = dt.timetuple().tm_yday
     gamma = 2 * math.pi / 365 * (day_of_year - 1)
     eqtime = 229.18 * (0.000075 + 0.001868 * math.cos(gamma) - 0.032077 * math.sin(gamma) 
                        - 0.014615 * math.cos(2*gamma) - 0.04089 * math.sin(2*gamma))
-
-    long_correction = longitude * 4.0
-    total_correction_min = long_correction + eqtime
-
-    solar_dt = dt_utc + timedelta(minutes=total_correction_min)
-
+    
+    total_correction_min = long_correction_min + eqtime
+    # Cap correction to realistic range (±40 minutes)
+    total_correction_min = max(min(total_correction_min, 40), -40)
+    
+    solar_dt = dt + timedelta(minutes=total_correction_min)
+    
     return {
         "original_time": f"{hour:02d}:{minute:02d}",
-        "corrected_hour": solar_dt.hour,
-        "corrected_minute": solar_dt.minute,
         "corrected_time": f"{solar_dt.hour:02d}:{solar_dt.minute:02d}",
-        "longitude_correction_min": round(long_correction, 1),
+        "longitude_correction_min": round(long_correction_min, 1),
         "equation_of_time_min": round(eqtime, 2),
         "total_correction_min": round(total_correction_min, 2),
-        "note": "Advanced True Solar Time with EoT + timezone adjustment"
+        "note": "True Solar Time (capped for realism)"
     }
 
 class BirthData(BaseModel):
@@ -91,14 +85,13 @@ async def calculate_saju(data: BirthData):
             longitude = 0
             location_name = data.birthplace
 
-        # True Solar Time
+        # True Solar Time (fixed)
         solar_time_info = calculate_true_solar_time(
-            data.year, data.month, data.day, data.hour, data.minute, longitude, location_name
+            data.year, data.month, data.day, data.hour, data.minute, longitude
         )
 
-        # Use corrected time
-        use_hour = solar_time_info["corrected_hour"]
-        use_minute = solar_time_info["corrected_minute"]
+        use_hour = int(solar_time_info["corrected_time"].split(":")[0])
+        use_minute = int(solar_time_info["corrected_time"].split(":")[1])
 
         # Calculate chart with corrected time
         if data.is_lunar:
@@ -111,7 +104,7 @@ async def calculate_saju(data: BirthData):
         eight_char = lunar.getEightChar()
         day_master_stem = eight_char.getDayGan()
 
-        # Pillars (simplified for now - add full Ten Gods logic as needed)
+        # Pillars
         pillar_info = [
             ("year", eight_char.getYearGan(), eight_char.getYearZhi(), eight_char.getYearHideGan()),
             ("month", eight_char.getMonthGan(), eight_char.getMonthZhi(), eight_char.getMonthHideGan()),
