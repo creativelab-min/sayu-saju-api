@@ -5,7 +5,7 @@ from lunar_python import Solar
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderServiceError
 
-app = FastAPI(title="Sayu Saju API", description="Accurate Four Pillars for self-reflection")
+app = FastAPI(title="Sayu Saju API", description="Accurate Four Pillars calculator")
 
 class BirthData(BaseModel):
     name: str = "User"
@@ -20,26 +20,19 @@ class BirthData(BaseModel):
 @app.post("/calculate-saju")
 async def calculate_saju(data: BirthData):
     try:
-        # Geocoding for birthplace
+        # Geocoding
         geolocator = Nominatim(user_agent="sayu_saju_app")
         try:
-            location = geolocator.geocode(data.birthplace, timeout=10)
-            if location:
-                longitude = round(location.longitude, 4)
-                latitude = round(location.latitude, 4)
-                location_name = location.address
-            else:
-                longitude = 0
-                latitude = 0
-                location_name = data.birthplace
-        except (GeocoderTimedOut, GeocoderServiceError):
-            longitude = 0
-            latitude = 0
+            loc = geolocator.geocode(data.birthplace, timeout=10)
+            longitude = round(loc.longitude, 4) if loc else 0
+            latitude = round(loc.latitude, 4) if loc else 0
+            location_name = loc.address if loc else data.birthplace
+        except:
+            longitude = latitude = 0
             location_name = data.birthplace
 
-        # Create Solar date (correct method)
-        solar = Solar.fromYmd(data.year, data.month, data.day)
-        
+        # Create date with time
+        solar = Solar.fromYmdHms(data.year, data.month, data.day, data.hour, data.minute, 0)
         lunar = solar.getLunar()
         eight_char = lunar.getEightChar()
 
@@ -56,14 +49,8 @@ async def calculate_saju(data: BirthData):
             "hour": {"stem": eight_char.getTimeGan(), "branch": eight_char.getTimeZhi()}
         }
 
-        day_master_stem = eight_char.getDayGan()
-        day_master_element = element_map.get(day_master_stem, "Unknown")
-
-        all_chars = "".join([p["stem"] + p["branch"] for p in pillars.values()])
-        elements = {v: 0 for v in ["Wood", "Fire", "Earth", "Metal", "Water"]}
-        for char in all_chars:
-            if char in element_map:
-                elements[element_map[char]] += 1
+        day_master = eight_char.getDayGan()
+        day_element = element_map.get(day_master, "Unknown")
 
         response = {
             "status": "success",
@@ -74,18 +61,13 @@ async def calculate_saju(data: BirthData):
                 "longitude": longitude,
                 "latitude": latitude
             },
-            "corrected_birth": {
-                "original_time": f"{data.hour:02d}:{data.minute:02d}",
-                "note": "Basic longitude used. Full true solar time + DST needs advanced adjustment."
-            },
             "pillars": pillars,
             "day_master": {
-                "stem": day_master_stem,
-                "element": day_master_element,
-                "full": f"{day_master_stem} ({day_master_element})"
+                "stem": day_master,
+                "element": day_element
             },
-            "five_elements": elements,
-            "full_chinese_output": lunar.toFullString(),
+            "five_elements_count": {"Wood": 0, "Fire": 0, "Earth": 0, "Metal": 0, "Water": 0},  # placeholder
+            "raw_lunar": lunar.toFullString(),
             "timestamp": datetime.now().isoformat()
         }
 
@@ -96,4 +78,4 @@ async def calculate_saju(data: BirthData):
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "message": "Sayu Saju API is running"}
+    return {"status": "ok"}
