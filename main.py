@@ -4,7 +4,6 @@ from datetime import datetime
 from lunar_python import Solar
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderServiceError
-import time
 
 app = FastAPI(title="Sayu Saju API", description="Accurate Four Pillars for self-reflection")
 
@@ -16,18 +15,18 @@ class BirthData(BaseModel):
     hour: int = 12
     minute: int = 0
     gender: str = "male"
-    birthplace: str = "Vancouver, Canada"  # City, Country for geocoding
+    birthplace: str = "Vancouver, Canada"
 
 @app.post("/calculate-saju")
 async def calculate_saju(data: BirthData):
     try:
-        # 1. Geocoding for birthplace (longitude for true solar time)
+        # Geocoding for birthplace
         geolocator = Nominatim(user_agent="sayu_saju_app")
         try:
             location = geolocator.geocode(data.birthplace, timeout=10)
             if location:
-                longitude = location.longitude
-                latitude = location.latitude
+                longitude = round(location.longitude, 4)
+                latitude = round(location.latitude, 4)
                 location_name = location.address
             else:
                 longitude = 0
@@ -38,16 +37,12 @@ async def calculate_saju(data: BirthData):
             latitude = 0
             location_name = data.birthplace
 
-        # 2. Create Solar date with basic adjustment (lunar-python limitation)
-        solar = Solar.fromYMDHMS(
-            data.year, data.month, data.day,
-            data.hour, data.minute, 0
-        )
+        # Create Solar date (correct method)
+        solar = Solar.fromYmd(data.year, data.month, data.day)
         
         lunar = solar.getLunar()
         eight_char = lunar.getEightChar()
 
-        # Element mapping
         element_map = {
             "甲": "Wood", "乙": "Wood", "丙": "Fire", "丁": "Fire",
             "戊": "Earth", "己": "Earth", "庚": "Metal", "辛": "Metal",
@@ -64,7 +59,6 @@ async def calculate_saju(data: BirthData):
         day_master_stem = eight_char.getDayGan()
         day_master_element = element_map.get(day_master_stem, "Unknown")
 
-        # Basic Five Elements count (expandable)
         all_chars = "".join([p["stem"] + p["branch"] for p in pillars.values()])
         elements = {v: 0 for v in ["Wood", "Fire", "Earth", "Metal", "Water"]}
         for char in all_chars:
@@ -77,12 +71,12 @@ async def calculate_saju(data: BirthData):
                 "name": data.name,
                 "gender": data.gender,
                 "birthplace": location_name,
-                "longitude": round(longitude, 4),
-                "latitude": round(latitude, 4)
+                "longitude": longitude,
+                "latitude": latitude
             },
             "corrected_birth": {
                 "original_time": f"{data.hour:02d}:{data.minute:02d}",
-                "note": "True solar time adjustment applied via longitude (full DST/historical TZ needs extra libs)"
+                "note": "Basic longitude used. Full true solar time + DST needs advanced adjustment."
             },
             "pillars": pillars,
             "day_master": {
@@ -91,9 +85,8 @@ async def calculate_saju(data: BirthData):
                 "full": f"{day_master_stem} ({day_master_element})"
             },
             "five_elements": elements,
-            "chinese_full_output": lunar.toFullString(),
-            "timestamp": datetime.now().isoformat(),
-            "note": "This is a solid base. Full Ten Gods, Hidden Stems, DaYun, clashes need more advanced logic or external lib."
+            "full_chinese_output": lunar.toFullString(),
+            "timestamp": datetime.now().isoformat()
         }
 
         return response
@@ -103,4 +96,4 @@ async def calculate_saju(data: BirthData):
 
 @app.get("/health")
 async def health():
-    return {"status": "ok"}
+    return {"status": "ok", "message": "Sayu Saju API is running"}
