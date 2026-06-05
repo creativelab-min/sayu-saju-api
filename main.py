@@ -27,38 +27,146 @@ element_map = {
     "庚":"Metal", "辛":"Metal", "壬":"Water", "癸":"Water"
 }
 
-# === FULL TEN GODS (abbreviated - expand if needed) ===
+# === FULL TEN GODS WITH DESCRIPTIONS (All 10 Day Masters) ===
 ten_gods_full = {
-    "甲": {"甲": {"name": "Friend (比肩)", "description": "Self-support, independence."}},
-    # Add full mapping from earlier if you want descriptions in every pillar
+    "甲": {  # Yang Wood
+        "甲": {"name": "Friend (比肩)", "description": "Self-support, independence, strong personal will."},
+        "乙": {"name": "Rob Wealth (劫财)", "description": "Competitiveness, sharing resources, sibling-like rivalry."},
+        "丙": {"name": "Eating God (食神)", "description": "Creativity, enjoyment, talent, relaxation."},
+        "丁": {"name": "Hurting Officer (伤官)", "description": "Rebellion, charisma, innovation, bold expression."},
+        "戊": {"name": "Indirect Wealth (偏财)", "description": "Opportunities, side income, entrepreneurship."},
+        "己": {"name": "Direct Wealth (正财)", "description": "Stable resources, responsibility, steady progress."},
+        "庚": {"name": "Seven Killings (七杀)", "description": "Drive, pressure, leadership, transformation."},
+        "辛": {"name": "Direct Officer (正官)", "description": "Structure, discipline, ethics, authority."},
+        "壬": {"name": "Indirect Resource (偏印)", "description": "Intuition, unconventional learning, insight."},
+        "癸": {"name": "Direct Resource (正印)", "description": "Support, wisdom, education, nurturing."}
+    },
+    "乙": {  # Yin Wood
+        "甲": {"name": "Rob Wealth (劫财)", "description": "Competitiveness, sharing resources."},
+        "乙": {"name": "Friend (比肩)", "description": "Self-support, independence."},
+        "丙": {"name": "Hurting Officer (伤官)", "description": "Rebellion, charisma, innovation."},
+        "丁": {"name": "Eating God (食神)", "description": "Creativity, enjoyment, talent."},
+        "戊": {"name": "Direct Wealth (正财)", "description": "Stable resources, responsibility."},
+        "己": {"name": "Indirect Wealth (偏财)", "description": "Opportunities, entrepreneurship."},
+        "庚": {"name": "Direct Officer (正官)", "description": "Structure, discipline, ethics."},
+        "辛": {"name": "Seven Killings (七杀)", "description": "Drive, pressure, leadership."},
+        "壬": {"name": "Direct Resource (正印)", "description": "Support, wisdom, nurturing."},
+        "癸": {"name": "Indirect Resource (偏印)", "description": "Intuition, unconventional insight."}
+    },
+    "丙": {  # Yang Fire
+        "甲": {"name": "Direct Resource (正印)", "description": "Support, wisdom, nurturing."},
+        "乙": {"name": "Indirect Resource (偏印)", "description": "Intuition, unconventional learning."},
+        "丙": {"name": "Friend (比肩)", "description": "Self-support, independence."},
+        "丁": {"name": "Rob Wealth (劫财)", "description": "Competitiveness, sharing."},
+        "戊": {"name": "Eating God (食神)", "description": "Creativity, enjoyment."},
+        "己": {"name": "Hurting Officer (伤官)", "description": "Rebellion, charisma."},
+        "庚": {"name": "Indirect Wealth (偏财)", "description": "Opportunities, entrepreneurship."},
+        "辛": {"name": "Direct Wealth (正财)", "description": "Stable resources, responsibility."},
+        "壬": {"name": "Seven Killings (七杀)", "description": "Drive, pressure, leadership."},
+        "癸": {"name": "Direct Officer (正官)", "description": "Structure, discipline."}
+    },
+    "丁": {  # Yin Fire
+        "甲": {"name": "Indirect Resource (偏印)", "description": "Intuition, unconventional insight."},
+        "乙": {"name": "Direct Resource (正印)", "description": "Support, wisdom, nurturing."},
+        "丙": {"name": "Rob Wealth (劫财)", "description": "Competitiveness, sharing."},
+        "丁": {"name": "Friend (比肩)", "description": "Self-support, independence."},
+        "戊": {"name": "Hurting Officer (伤官)", "description": "Rebellion, charisma."},
+        "己": {"name": "Eating God (食神)", "description": "Creativity, enjoyment."},
+        "庚": {"name": "Direct Wealth (正财)", "description": "Stable resources."},
+        "辛": {"name": "Indirect Wealth (偏财)", "description": "Opportunities, entrepreneurship."},
+        "壬": {"name": "Direct Officer (正官)", "description": "Structure, discipline."},
+        "癸": {"name": "Seven Killings (七杀)", "description": "Drive, pressure, leadership."}
+    },
+    "戊": {  # Yang Earth
+        "甲": {"name": "Seven Killings (七杀)", "description": "Drive, pressure, leadership."},
+        "乙": {"name": "Direct Officer (正官)", "description": "Structure, discipline."},
+        "丙": {"name": "Direct Resource (正印)", "description": "Support, wisdom."},
+        "丁": {"name": "Indirect Resource (偏印)", "description": "Intuition, insight."},
+        "戊": {"name": "Friend (比肩)", "description": "Self-support, independence."},
+        "己": {"name": "Rob Wealth (劫财)", "description": "Competitiveness, sharing."},
+        "庚": {"name": "Eating God (食神)", "description": "Creativity, enjoyment."},
+        "辛": {"name": "Hurting Officer (伤官)", "description": "Rebellion, charisma."},
+        "壬": {"name": "Indirect Wealth (偏财)", "description": "Opportunities."},
+        "癸": {"name": "Direct Wealth (正财)", "description": "Stable resources."}
+    },
+    "己": {  # Yin Earth
+        "甲": {"name": "Direct Officer (正官)", "description": "Structure, discipline."},
+        "乙": {"name": "Seven Killings (七杀)", "description": "Drive, pressure, leadership."},
+        "丙": {"name": "Indirect Resource (偏印)", "description": "Intuition, insight."},
+        "丁": {"name": "Direct Resource (正印)", "description": "Support, wisdom."},
+        "戊": {"name": "Rob Wealth (劫财)", "description": "Competitiveness."},
+        "己": {"name": "Friend (比肩)", "description": "Self-support, independence."},
+        "庚": {"name": "Hurting Officer (伤官)", "description": "Rebellion, charisma."},
+        "辛": {"name": "Eating God (食神)", "description": "Creativity, enjoyment."},
+        "壬": {"name": "Direct Wealth (正财)", "description": "Stable resources."},
+        "癸": {"name": "Indirect Wealth (偏财)", "description": "Opportunities."}
+    },
+    "庚": {  # Yang Metal
+        "甲": {"name": "Indirect Wealth (偏财)", "description": "Opportunities, entrepreneurship."},
+        "乙": {"name": "Direct Wealth (正财)", "description": "Stable resources, responsibility."},
+        "丙": {"name": "Seven Killings (七杀)", "description": "Drive, pressure, leadership."},
+        "丁": {"name": "Direct Officer (正官)", "description": "Structure, discipline."},
+        "戊": {"name": "Direct Resource (正印)", "description": "Support, wisdom."},
+        "己": {"name": "Indirect Resource (偏印)", "description": "Intuition, insight."},
+        "庚": {"name": "Friend (比肩)", "description": "Self-support, independence."},
+        "辛": {"name": "Rob Wealth (劫财)", "description": "Competitiveness, sharing."},
+        "壬": {"name": "Eating God (食神)", "description": "Creativity, enjoyment."},
+        "癸": {"name": "Hurting Officer (伤官)", "description": "Rebellion, charisma."}
+    },
+    "辛": {  # Yin Metal
+        "甲": {"name": "Direct Wealth (正财)", "description": "Stable resources, responsibility."},
+        "乙": {"name": "Indirect Wealth (偏财)", "description": "Opportunities, entrepreneurship."},
+        "丙": {"name": "Direct Officer (正官)", "description": "Structure, discipline."},
+        "丁": {"name": "Seven Killings (七杀)", "description": "Drive, pressure, leadership."},
+        "戊": {"name": "Indirect Resource (偏印)", "description": "Intuition, insight."},
+        "己": {"name": "Direct Resource (正印)", "description": "Support, wisdom."},
+        "庚": {"name": "Rob Wealth (劫财)", "description": "Competitiveness, sharing."},
+        "辛": {"name": "Friend (比肩)", "description": "Self-support, independence."},
+        "壬": {"name": "Hurting Officer (伤官)", "description": "Rebellion, charisma."},
+        "癸": {"name": "Eating God (食神)", "description": "Creativity, enjoyment."}
+    },
+    "壬": {  # Yang Water
+        "甲": {"name": "Eating God (食神)", "description": "Creativity, enjoyment."},
+        "乙": {"name": "Hurting Officer (伤官)", "description": "Rebellion, charisma."},
+        "丙": {"name": "Indirect Wealth (偏财)", "description": "Opportunities, entrepreneurship."},
+        "丁": {"name": "Direct Wealth (正财)", "description": "Stable resources."},
+        "戊": {"name": "Seven Killings (七杀)", "description": "Drive, pressure, leadership."},
+        "己": {"name": "Direct Officer (正官)", "description": "Structure, discipline."},
+        "庚": {"name": "Direct Resource (正印)", "description": "Support, wisdom."},
+        "辛": {"name": "Indirect Resource (偏印)", "description": "Intuition, insight."},
+        "壬": {"name": "Friend (比肩)", "description": "Self-support, independence."},
+        "癸": {"name": "Rob Wealth (劫财)", "description": "Competitiveness, sharing."}
+    },
+    "癸": {  # Yin Water
+        "甲": {"name": "Hurting Officer (伤官)", "description": "Rebellion, charisma."},
+        "乙": {"name": "Eating God (食神)", "description": "Creativity, enjoyment."},
+        "丙": {"name": "Direct Wealth (正财)", "description": "Stable resources."},
+        "丁": {"name": "Indirect Wealth (偏财)", "description": "Opportunities."},
+        "戊": {"name": "Direct Officer (正官)", "description": "Structure, discipline."},
+        "己": {"name": "Seven Killings (七杀)", "description": "Drive, pressure, leadership."},
+        "庚": {"name": "Indirect Resource (偏印)", "description": "Intuition, insight."},
+        "辛": {"name": "Direct Resource (正印)", "description": "Support, wisdom."},
+        "壬": {"name": "Rob Wealth (劫财)", "description": "Competitiveness, sharing."},
+        "癸": {"name": "Friend (比肩)", "description": "Self-support, independence."}
+    }
 }
 
 def calculate_true_solar_time(year, month, day, hour, minute, longitude):
-    """Fixed & Capped True Solar Time"""
     dt = datetime(year, month, day, hour, minute)
-    
-    # Longitude correction (4 min per degree)
     long_correction_min = longitude * 4.0
-    
-    # Equation of Time
     day_of_year = dt.timetuple().tm_yday
     gamma = 2 * math.pi / 365 * (day_of_year - 1)
     eqtime = 229.18 * (0.000075 + 0.001868 * math.cos(gamma) - 0.032077 * math.sin(gamma) 
                        - 0.014615 * math.cos(2*gamma) - 0.04089 * math.sin(2*gamma))
-    
-    total_correction_min = long_correction_min + eqtime
-    # Cap correction to realistic range (±40 minutes)
-    total_correction_min = max(min(total_correction_min, 40), -40)
-    
+    total_correction_min = max(min(long_correction_min + eqtime, 40), -40)
     solar_dt = dt + timedelta(minutes=total_correction_min)
-    
     return {
         "original_time": f"{hour:02d}:{minute:02d}",
         "corrected_time": f"{solar_dt.hour:02d}:{solar_dt.minute:02d}",
         "longitude_correction_min": round(long_correction_min, 1),
         "equation_of_time_min": round(eqtime, 2),
         "total_correction_min": round(total_correction_min, 2),
-        "note": "True Solar Time (capped for realism)"
+        "note": "Realistic True Solar Time (capped)"
     }
 
 class BirthData(BaseModel):
@@ -75,7 +183,6 @@ class BirthData(BaseModel):
 @app.post("/calculate-saju")
 async def calculate_saju(data: BirthData):
     try:
-        # Geocoding
         geolocator = Nominatim(user_agent="sayu_saju_app")
         try:
             loc = geolocator.geocode(data.birthplace, timeout=10)
@@ -85,15 +192,10 @@ async def calculate_saju(data: BirthData):
             longitude = 0
             location_name = data.birthplace
 
-        # True Solar Time (fixed)
-        solar_time_info = calculate_true_solar_time(
-            data.year, data.month, data.day, data.hour, data.minute, longitude
-        )
-
+        solar_time_info = calculate_true_solar_time(data.year, data.month, data.day, data.hour, data.minute, longitude)
         use_hour = int(solar_time_info["corrected_time"].split(":")[0])
         use_minute = int(solar_time_info["corrected_time"].split(":")[1])
 
-        # Calculate chart with corrected time
         if data.is_lunar:
             lunar = Lunar.fromYMDHMS(data.year, data.month, data.day, use_hour, use_minute, 0)
             solar = lunar.getSolar()
@@ -104,7 +206,6 @@ async def calculate_saju(data: BirthData):
         eight_char = lunar.getEightChar()
         day_master_stem = eight_char.getDayGan()
 
-        # Pillars
         pillar_info = [
             ("year", eight_char.getYearGan(), eight_char.getYearZhi(), eight_char.getYearHideGan()),
             ("month", eight_char.getMonthGan(), eight_char.getMonthZhi(), eight_char.getMonthHideGan()),
@@ -115,26 +216,28 @@ async def calculate_saju(data: BirthData):
         pillars = {}
         for name, stem, branch, hidden in pillar_info:
             hidden_stems = list(hidden) if hidden else []
+            ten_god_info = ten_gods_full.get(day_master_stem, {}).get(stem, {"name": "N/A", "description": ""})
             pillars[name] = {
                 "stem": stem,
                 "stem_english": stem_english.get(stem, stem),
                 "branch": branch,
                 "branch_english": branch_english.get(branch, branch),
-                "hidden_stems": hidden_stems
+                "hidden_stems": hidden_stems,
+                "ten_god": ten_god_info["name"],
+                "ten_god_description": ten_god_info["description"]
             }
+
+        all_stems = [p["stem"] for p in pillars.values()] + [hs for p in pillars.values() for hs in p["hidden_stems"]]
+        elements = {el: all_stems.count(st) for st, el in element_map.items() if st in all_stems}
 
         response = {
             "status": "success",
             "gentle_note": "This chart is a gentle mirror for self-reflection and personal growth.",
-            "user_metadata": {
-                "name": data.name,
-                "gender": data.gender,
-                "birthplace": location_name,
-                "longitude": longitude
-            },
+            "user_metadata": {"name": data.name, "gender": data.gender, "birthplace": location_name, "longitude": longitude},
             "true_solar_time": solar_time_info,
             "pillars": pillars,
             "day_master": day_master_stem,
+            "five_elements": elements,
             "timestamp": datetime.now().isoformat()
         }
 
