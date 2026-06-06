@@ -151,6 +151,32 @@ ten_gods_full = {
     }
 }
 
+# === INTERACTION RULES ===
+clashes = {"子":"午","午":"子","丑":"未","未":"丑","寅":"申","申":"寅","卯":"酉","酉":"卯","辰":"戌","戌":"辰","巳":"亥","亥":"巳"}
+combinations = {"子":"丑","丑":"子","寅":"亥","亥":"寅","卯":"戌","戌":"卯","辰":"酉","酉":"辰","巳":"申","申":"巳","午":"未","未":"午"}
+harms = {"子":"未","未":"子","丑":"午","午":"丑","寅":"巳","巳":"寅","卯":"辰","辰":"卯","申":"亥","亥":"申","酉":"戌","戌":"酉"}
+punishments = {"子":"卯","卯":"子","丑":"辰","辰":"丑","寅":"巳","巳":"寅","午":"午","未":"戌","戌":"未","申":"申","酉":"酉","亥":"亥"}
+
+def get_interaction(b1, b2):
+    if clashes.get(b1) == b2 or clashes.get(b2) == b1: return "Clash (冲)"
+    if combinations.get(b1) == b2 or combinations.get(b2) == b1: return "Combination (合)"
+    if harms.get(b1) == b2 or harms.get(b2) == b1: return "Harm (害)"
+    if punishments.get(b1) == b2 or punishments.get(b2) == b1: return "Punishment (刑)"
+    return None
+
+def analyze_luck_cycle_interactions(natal_branches, luck_cycles):
+    result = []
+    for cycle in luck_cycles:
+        cycle_branch = cycle.get("branch")
+        inters = []
+        for p_name, n_branch in natal_branches.items():
+            inter = get_interaction(n_branch, cycle_branch)
+            if inter:
+                inters.append(f"{p_name} {inter}")
+        if inters:
+            result.append({"cycle": cycle["cycle"], "age_range": cycle["age_range"], "interactions": inters})
+    return result
+
 def calculate_true_solar_time(year, month, day, hour, minute, longitude):
     dt = datetime(year, month, day, hour, minute)
     long_correction_min = longitude * 4.0
@@ -158,15 +184,13 @@ def calculate_true_solar_time(year, month, day, hour, minute, longitude):
     gamma = 2 * math.pi / 365 * (day_of_year - 1)
     eqtime = 229.18 * (0.000075 + 0.001868 * math.cos(gamma) - 0.032077 * math.sin(gamma) 
                        - 0.014615 * math.cos(2*gamma) - 0.04089 * math.sin(2*gamma))
-    total_correction_min = max(min(long_correction_min + eqtime, 40), -40)
-    solar_dt = dt + timedelta(minutes=total_correction_min)
+    total = max(min(long_correction_min + eqtime, 40), -40)
+    solar_dt = dt + timedelta(minutes=total)
     return {
         "original_time": f"{hour:02d}:{minute:02d}",
         "corrected_time": f"{solar_dt.hour:02d}:{solar_dt.minute:02d}",
-        "longitude_correction_min": round(long_correction_min, 1),
-        "equation_of_time_min": round(eqtime, 2),
-        "total_correction_min": round(total_correction_min, 2),
-        "note": "Realistic True Solar Time (capped)"
+        "total_correction_min": round(total, 2),
+        "note": "Realistic capped True Solar Time"
     }
 
 class BirthData(BaseModel):
@@ -183,6 +207,7 @@ class BirthData(BaseModel):
 @app.post("/calculate-saju")
 async def calculate_saju(data: BirthData):
     try:
+        # Geocoding
         geolocator = Nominatim(user_agent="sayu_saju_app")
         try:
             loc = geolocator.geocode(data.birthplace, timeout=10)
@@ -192,10 +217,12 @@ async def calculate_saju(data: BirthData):
             longitude = 0
             location_name = data.birthplace
 
+        # True Solar Time
         solar_time_info = calculate_true_solar_time(data.year, data.month, data.day, data.hour, data.minute, longitude)
         use_hour = int(solar_time_info["corrected_time"].split(":")[0])
         use_minute = int(solar_time_info["corrected_time"].split(":")[1])
 
+        # Chart
         if data.is_lunar:
             lunar = Lunar.fromYMDHMS(data.year, data.month, data.day, use_hour, use_minute, 0)
             solar = lunar.getSolar()
@@ -206,6 +233,7 @@ async def calculate_saju(data: BirthData):
         eight_char = lunar.getEightChar()
         day_master_stem = eight_char.getDayGan()
 
+        # Pillars
         pillar_info = [
             ("year", eight_char.getYearGan(), eight_char.getYearZhi(), eight_char.getYearHideGan()),
             ("month", eight_char.getMonthGan(), eight_char.getMonthZhi(), eight_char.getMonthHideGan()),
@@ -214,30 +242,56 @@ async def calculate_saju(data: BirthData):
         ]
 
         pillars = {}
+        natal_branches = {}
         for name, stem, branch, hidden in pillar_info:
             hidden_stems = list(hidden) if hidden else []
-            ten_god_info = ten_gods_full.get(day_master_stem, {}).get(stem, {"name": "N/A", "description": ""})
+            natal_branches[name] = branch
             pillars[name] = {
                 "stem": stem,
                 "stem_english": stem_english.get(stem, stem),
                 "branch": branch,
                 "branch_english": branch_english.get(branch, branch),
-                "hidden_stems": hidden_stems,
-                "ten_god": ten_god_info["name"],
-                "ten_god_description": ten_god_info["description"]
+                "hidden_stems": hidden_stems
             }
 
+        # Elements
         all_stems = [p["stem"] for p in pillars.values()] + [hs for p in pillars.values() for hs in p["hidden_stems"]]
         elements = {el: all_stems.count(st) for st, el in element_map.items() if st in all_stems}
+
+        # DaYun
+        gender_value = 1 if data.gender.lower() == "male" else 0
+        yun = eight_char.getYun(gender_value)
+        da_yun_list = yun.getDaYun()
+        luck_cycles = []
+        for i, dy in enumerate(da_yun_list[:8]):
+            gz = dy.getGanZhi()
+            luck_cycles.append({
+                "cycle": i + 1,
+                "age_range": f"{dy.getStartAge()}-{dy.getStartAge() + 9}",
+                "pillar": gz,
+                "stem_english": stem_english.get(gz[0], gz[0]),
+                "branch": gz[1],
+                "branch_english": branch_english.get(gz[1], gz[1])
+            })
+
+        # Luck Cycle Interactions
+        luck_interactions = analyze_luck_cycle_interactions(natal_branches, luck_cycles)
 
         response = {
             "status": "success",
             "gentle_note": "This chart is a gentle mirror for self-reflection and personal growth.",
-            "user_metadata": {"name": data.name, "gender": data.gender, "birthplace": location_name, "longitude": longitude},
+            "user_metadata": {
+                "name": data.name,
+                "gender": data.gender,
+                "birthplace": location_name,
+                "longitude": longitude
+            },
             "true_solar_time": solar_time_info,
             "pillars": pillars,
             "day_master": day_master_stem,
             "five_elements": elements,
+            "luck_cycles": luck_cycles,
+            "luck_cycle_interactions": luck_interactions,
             "timestamp": datetime.now().isoformat()
         }
 
