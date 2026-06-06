@@ -123,15 +123,24 @@ async def calculate_saju(data: BirthData):
             ("hour", eight_char.getTimeGan(), eight_char.getTimeZhi(), eight_char.getTimeHideGan())
         ]
 
+               # Pillars with Ten Gods + Hidden Stems
         pillars = {}
         for name, stem, branch, hidden in pillar_info:
             hidden_stems = list(hidden) if hidden else []
+            # Calculate Ten God for main stem
+            ten_god = ten_gods_full.get(day_master_stem, {}).get(stem, "N/A")
+            # Calculate Ten Gods for hidden stems
+            hidden_ten_gods = [ten_gods_full.get(day_master_stem, {}).get(hs, "N/A") for hs in hidden_stems]
+
             pillars[name] = {
                 "stem": stem,
                 "stem_english": stem_english.get(stem, stem),
                 "branch": branch,
                 "branch_english": branch_english.get(branch, branch),
-                "hidden_stems": hidden_stems
+                "hidden_stems": hidden_stems,
+                "hidden_stems_english": [stem_english.get(h, h) for h in hidden_stems],
+                "ten_god": ten_god,
+                "hidden_ten_gods": hidden_ten_gods
             }
 
         response = {
