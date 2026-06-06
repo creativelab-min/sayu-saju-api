@@ -1,31 +1,34 @@
 # Sayu Saju API
 
-**Gentle AI-powered Four Pillars (Saju) calculator for self-understanding**
+**🌿 Gentle AI-powered Four Pillars (Saju) calculator for self-understanding**
 
-A clean, accurate backend API for the Sayu app — focused on **reflection**, not fortune-telling.
+A clean, accurate, and reflective backend API for the Sayu app — built for modern self-reflection, not fortune-telling.
 
 ---
 
-## 🌿 About Sayu
+## 🌟 About Sayu
 
-Sayu helps users explore their personality patterns, strengths, and growth areas through traditional Saju (Four Pillars of Destiny), presented in a modern, empathetic, and CBT-informed way.
+Sayu turns traditional Saju (Four Pillars of Destiny) into a modern tool for self-understanding. It combines accurate chart calculation with CBT-informed reflection and empathetic guidance.
 
 **Core Principle**:  
-> "This chart offers a lens for gentle self-reflection."
+> “This chart is a gentle mirror for self-reflection and personal growth.”
 
 ---
 
-## ✨ Features
+## ✨ Current Features
 
-- Accurate Four Pillars calculation (Year, Month, Day, Hour)
-- Support for both **Solar** and **Lunar** calendar input
-- Birthplace geocoding (longitude/latitude for better accuracy)
+- Accurate Four Pillars (Year, Month, Day, Hour)
+- Solar + Lunar calendar support
+- Advanced True Solar Time adjustment (longitude + Equation of Time)
 - Hidden Stems (藏干)
-- **Complete Ten Gods (십신)** with English names and descriptions
+- **Complete Ten Gods** (main stems + hidden stems)
 - Five Elements distribution
-- Luck Cycles (DaYun / 대운) — first 8 cycles with age ranges
-- Fully English output with calm, reflective tone
-- FastAPI + `lunar-python` backend
+- DaYun (Luck Cycles) — first 8 cycles with age ranges
+- Annual Cycles (세운)
+- **Pillar Interactions** — Clash (冲), Combination (合), Harm (害), Punishment (刑)
+- Luck Cycle Interactions
+- Gentle, non-predictive language
+- English-first output with Korean character support
 
 ---
 
@@ -33,11 +36,11 @@ Sayu helps users explore their personality patterns, strengths, and growth areas
 
 ### POST `/calculate-saju`
 
-**Request Body:**
+**Request Body Example:**
 
 ```json
 {
-  "name": "JM Test",
+  "name": "Test User",
   "year": 1989,
   "month": 7,
   "day": 20,
