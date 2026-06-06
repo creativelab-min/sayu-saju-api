@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from datetime import datetime
+from datetime import datetime, timedelta
 from lunar_python import Solar, Lunar
 from geopy.geocoders import Nominatim
 import math
@@ -26,17 +26,38 @@ element_map = {
     "庚":"Metal", "辛":"Metal", "壬":"Water", "癸":"Water"
 }
 
+# === TEN GODS (Simple version) ===
 ten_gods_full = {
-    "甲": {"甲": "Friend", "乙": "Rob Wealth", "丙": "Eating God", "丁": "Hurting Officer", "戊": "Indirect Wealth", "己": "Direct Wealth", "庚": "Seven Killings", "辛": "Direct Officer", "壬": "Indirect Resource", "癸": "Direct Resource"},
-    "乙": {"甲": "Rob Wealth", "乙": "Friend", "丙": "Hurting Officer", "丁": "Eating God", "戊": "Direct Wealth", "己": "Indirect Wealth", "庚": "Direct Officer", "辛": "Seven Killings", "壬": "Direct Resource", "癸": "Indirect Resource"},
-    "丙": {"甲": "Direct Resource", "乙": "Indirect Resource", "丙": "Friend", "丁": "Rob Wealth", "戊": "Eating God", "己": "Hurting Officer", "庚": "Indirect Wealth", "辛": "Direct Wealth", "壬": "Seven Killings", "癸": "Direct Officer"},
-    "丁": {"甲": "Indirect Resource", "乙": "Direct Resource", "丙": "Rob Wealth", "丁": "Friend", "戊": "Hurting Officer", "己": "Eating God", "庚": "Direct Wealth", "辛": "Indirect Wealth", "壬": "Direct Officer", "癸": "Seven Killings"},
-    "戊": {"甲": "Seven Killings", "乙": "Direct Officer", "丙": "Direct Resource", "丁": "Indirect Resource", "戊": "Friend", "己": "Rob Wealth", "庚": "Eating God", "辛": "Hurting Officer", "壬": "Indirect Wealth", "癸": "Direct Wealth"},
-    "己": {"甲": "Direct Officer", "乙": "Seven Killings", "丙": "Indirect Resource", "丁": "Direct Resource", "戊": "Rob Wealth", "己": "Friend", "庚": "Hurting Officer", "辛": "Eating God", "壬": "Direct Wealth", "癸": "Indirect Wealth"},
-    "庚": {"甲": "Indirect Wealth", "乙": "Direct Wealth", "丙": "Seven Killings", "丁": "Direct Officer", "戊": "Direct Resource", "己": "Indirect Resource", "庚": "Friend", "辛": "Rob Wealth", "壬": "Eating God", "癸": "Hurting Officer"},
-    "辛": {"甲": "Direct Wealth", "乙": "Indirect Wealth", "丙": "Direct Officer", "丁": "Seven Killings", "戊": "Indirect Resource", "己": "Direct Resource", "庚": "Rob Wealth", "辛": "Friend", "壬": "Hurting Officer", "癸": "Eating God"},
-    "壬": {"甲": "Eating God", "乙": "Hurting Officer", "丙": "Indirect Wealth", "丁": "Direct Wealth", "戊": "Seven Killings", "己": "Direct Officer", "庚": "Direct Resource", "辛": "Indirect Resource", "壬": "Friend", "癸": "Rob Wealth"},
-    "癸": {"甲": "Hurting Officer", "乙": "Eating God", "丙": "Direct Wealth", "丁": "Indirect Wealth", "戊": "Direct Officer", "己": "Seven Killings", "庚": "Indirect Resource", "辛": "Direct Resource", "壬": "Rob Wealth", "癸": "Friend"}
+    "甲": {"甲": "Friend", "乙": "Rob Wealth", "丙": "Eating God", "丁": "Hurting Officer",
+           "戊": "Indirect Wealth", "己": "Direct Wealth", "庚": "Seven Killings", "辛": "Direct Officer",
+           "壬": "Indirect Resource", "癸": "Direct Resource"},
+    "乙": {"甲": "Rob Wealth", "乙": "Friend", "丙": "Hurting Officer", "丁": "Eating God",
+           "戊": "Direct Wealth", "己": "Indirect Wealth", "庚": "Direct Officer", "辛": "Seven Killings",
+           "壬": "Direct Resource", "癸": "Indirect Resource"},
+    "丙": {"甲": "Direct Resource", "乙": "Indirect Resource", "丙": "Friend", "丁": "Rob Wealth",
+           "戊": "Eating God", "己": "Hurting Officer", "庚": "Indirect Wealth", "辛": "Direct Wealth",
+           "壬": "Seven Killings", "癸": "Direct Officer"},
+    "丁": {"甲": "Indirect Resource", "乙": "Direct Resource", "丙": "Rob Wealth", "丁": "Friend",
+           "戊": "Hurting Officer", "己": "Eating God", "庚": "Direct Wealth", "辛": "Indirect Wealth",
+           "壬": "Direct Officer", "癸": "Seven Killings"},
+    "戊": {"甲": "Seven Killings", "乙": "Direct Officer", "丙": "Direct Resource", "丁": "Indirect Resource",
+           "戊": "Friend", "己": "Rob Wealth", "庚": "Eating God", "辛": "Hurting Officer",
+           "壬": "Indirect Wealth", "癸": "Direct Wealth"},
+    "己": {"甲": "Direct Officer", "乙": "Seven Killings", "丙": "Indirect Resource", "丁": "Direct Resource",
+           "戊": "Rob Wealth", "己": "Friend", "庚": "Hurting Officer", "辛": "Eating God",
+           "壬": "Direct Wealth", "癸": "Indirect Wealth"},
+    "庚": {"甲": "Indirect Wealth", "乙": "Direct Wealth", "丙": "Seven Killings", "丁": "Direct Officer",
+           "戊": "Direct Resource", "己": "Indirect Resource", "庚": "Friend", "辛": "Rob Wealth",
+           "壬": "Eating God", "癸": "Hurting Officer"},
+    "辛": {"甲": "Direct Wealth", "乙": "Indirect Wealth", "丙": "Direct Officer", "丁": "Seven Killings",
+           "戊": "Indirect Resource", "己": "Direct Resource", "庚": "Rob Wealth", "辛": "Friend",
+           "壬": "Hurting Officer", "癸": "Eating God"},
+    "壬": {"甲": "Eating God", "乙": "Hurting Officer", "丙": "Indirect Wealth", "丁": "Direct Wealth",
+           "戊": "Seven Killings", "己": "Direct Officer", "庚": "Direct Resource", "辛": "Indirect Resource",
+           "壬": "Friend", "癸": "Rob Wealth"},
+    "癸": {"甲": "Hurting Officer", "乙": "Eating God", "丙": "Direct Wealth", "丁": "Indirect Wealth",
+           "戊": "Direct Officer", "己": "Seven Killings", "庚": "Indirect Resource", "辛": "Direct Resource",
+           "壬": "Rob Wealth", "癸": "Friend"}
 }
 
 def calculate_true_solar_time(year, month, day, hour, minute, longitude):
@@ -63,13 +84,14 @@ class BirthData(BaseModel):
     day: int
     hour: int = 12
     minute: int = 0
-    gender: str = "male"
-    birthplace: str = "Vancouver, Canada"
+    gender: str = "female"
+    birthplace: str = "Seoul, Korea"
     is_lunar: bool = False
 
 @app.post("/calculate-saju")
 async def calculate_saju(data: BirthData):
     try:
+        # Geocoding
         geolocator = Nominatim(user_agent="sayu_saju_app")
         try:
             loc = geolocator.geocode(data.birthplace, timeout=10)
@@ -83,6 +105,7 @@ async def calculate_saju(data: BirthData):
         use_hour = solar_time_info["corrected_hour"]
         use_minute = solar_time_info["corrected_minute"]
 
+        # Chart Calculation
         if data.is_lunar:
             lunar = Lunar.fromYMDHMS(data.year, data.month, data.day, use_hour, use_minute, 0)
             solar = lunar.getSolar()
