@@ -26,11 +26,38 @@ element_map = {
     "庚":"Metal", "辛":"Metal", "壬":"Water", "癸":"Water"
 }
 
-# === TEN GODS ===
+# === COMPLETE TEN GODS ===
 ten_gods_full = {
-    "甲": {"甲": "Friend", "乙": "Rob Wealth", "丙": "Eating God", "丁": "Hurting Officer", "戊": "Indirect Wealth", "己": "Direct Wealth", "庚": "Seven Killings", "辛": "Direct Officer", "壬": "Indirect Resource", "癸": "Direct Resource"},
-    "乙": {"甲": "Rob Wealth", "乙": "Friend", "丙": "Hurting Officer", "丁": "Eating God", "戊": "Direct Wealth", "己": "Indirect Wealth", "庚": "Direct Officer", "辛": "Seven Killings", "壬": "Direct Resource", "癸": "Indirect Resource"},
-    # ... (shortened for brevity - full version works the same)
+    "甲": {"甲": "Friend (比肩)", "乙": "Rob Wealth (劫财)", "丙": "Eating God (食神)", "丁": "Hurting Officer (伤官)",
+           "戊": "Indirect Wealth (偏财)", "己": "Direct Wealth (正财)", "庚": "Seven Killings (七杀)", "辛": "Direct Officer (正官)",
+           "壬": "Indirect Resource (偏印)", "癸": "Direct Resource (正印)"},
+    "乙": {"甲": "Rob Wealth (劫财)", "乙": "Friend (比肩)", "丙": "Hurting Officer (伤官)", "丁": "Eating God (食神)",
+           "戊": "Direct Wealth (正财)", "己": "Indirect Wealth (偏财)", "庚": "Direct Officer (正官)", "辛": "Seven Killings (七杀)",
+           "壬": "Direct Resource (正印)", "癸": "Indirect Resource (偏印)"},
+    "丙": {"甲": "Direct Resource (正印)", "乙": "Indirect Resource (偏印)", "丙": "Friend (比肩)", "丁": "Rob Wealth (劫财)",
+           "戊": "Eating God (食神)", "己": "Hurting Officer (伤官)", "庚": "Indirect Wealth (偏财)", "辛": "Direct Wealth (正财)",
+           "壬": "Seven Killings (七杀)", "癸": "Direct Officer (正官)"},
+    "丁": {"甲": "Indirect Resource (偏印)", "乙": "Direct Resource (正印)", "丙": "Rob Wealth (劫财)", "丁": "Friend (比肩)",
+           "戊": "Hurting Officer (伤官)", "己": "Eating God (食神)", "庚": "Direct Wealth (正财)", "辛": "Indirect Wealth (偏财)",
+           "壬": "Direct Officer (正官)", "癸": "Seven Killings (七杀)"},
+    "戊": {"甲": "Seven Killings (七杀)", "乙": "Direct Officer (正官)", "丙": "Direct Resource (正印)", "丁": "Indirect Resource (偏印)",
+           "戊": "Friend (比肩)", "己": "Rob Wealth (劫财)", "庚": "Eating God (食神)", "辛": "Hurting Officer (伤官)",
+           "壬": "Indirect Wealth (偏财)", "癸": "Direct Wealth (正财)"},
+    "己": {"甲": "Direct Officer (正官)", "乙": "Seven Killings (七杀)", "丙": "Indirect Resource (偏印)", "丁": "Direct Resource (正印)",
+           "戊": "Rob Wealth (劫财)", "己": "Friend (比肩)", "庚": "Hurting Officer (伤官)", "辛": "Eating God (食神)",
+           "壬": "Direct Wealth (正财)", "癸": "Indirect Wealth (偏财)"},
+    "庚": {"甲": "Indirect Wealth (偏财)", "乙": "Direct Wealth (正财)", "丙": "Seven Killings (七杀)", "丁": "Direct Officer (正官)",
+           "戊": "Direct Resource (正印)", "己": "Indirect Resource (偏印)", "庚": "Friend (比肩)", "辛": "Rob Wealth (劫财)",
+           "壬": "Eating God (食神)", "癸": "Hurting Officer (伤官)"},
+    "辛": {"甲": "Direct Wealth (正财)", "乙": "Indirect Wealth (偏财)", "丙": "Direct Officer (正官)", "丁": "Seven Killings (七杀)",
+           "戊": "Indirect Resource (偏印)", "己": "Direct Resource (正印)", "庚": "Rob Wealth (劫财)", "辛": "Friend (比肩)",
+           "壬": "Hurting Officer (伤官)", "癸": "Eating God (食神)"},
+    "壬": {"甲": "Eating God (食神)", "乙": "Hurting Officer (伤官)", "丙": "Indirect Wealth (偏财)", "丁": "Direct Wealth (正财)",
+           "戊": "Seven Killings (七杀)", "己": "Direct Officer (正官)", "庚": "Direct Resource (正印)", "辛": "Indirect Resource (偏印)",
+           "壬": "Friend (比肩)", "癸": "Rob Wealth (劫财)"},
+    "癸": {"甲": "Hurting Officer (伤官)", "乙": "Eating God (食神)", "丙": "Direct Wealth (正财)", "丁": "Indirect Wealth (偏财)",
+           "戊": "Direct Officer (正官)", "己": "Seven Killings (七杀)", "庚": "Indirect Resource (偏印)", "辛": "Direct Resource (正印)",
+           "壬": "Rob Wealth (劫财)", "癸": "Friend (比肩)"}
 }
 
 def calculate_true_solar_time(year, month, day, hour, minute, longitude):
@@ -50,6 +77,20 @@ def calculate_true_solar_time(year, month, day, hour, minute, longitude):
         "note": "Realistic capped True Solar Time"
     }
 
+def generate_reflection_prompts(chart):
+    day_master = chart.get("day_master", "Unknown")
+    day_ten_god = chart.get("day_ten_god", "Unknown")
+    strongest_element = max(chart.get("five_elements", {}), key=chart.get("five_elements", {}).get) if chart.get("five_elements") else "Unknown"
+
+    return [
+        f"With your **{day_master}** Day Master as the foundation, what situations feel most natural to you right now?",
+        f"How is the **{day_ten_god}** energy appearing in your current relationships or challenges?",
+        f"Your chart shows strong **{strongest_element}** energy. How does this strength show up in your life?",
+        f"Looking at your Luck Cycle, what gentle invitation or lesson might it be offering?",
+        f"If this chart is a mirror, what part of yourself are you being invited to understand with more kindness?",
+        f"How can you work *with* your natural elemental balance instead of against it?"
+    ]
+
 class BirthData(BaseModel):
     name: str = "User"
     year: int
@@ -61,40 +102,10 @@ class BirthData(BaseModel):
     birthplace: str = "Vancouver, Canada"
     is_lunar: bool = False
 
-class ChatRequest(BaseModel):
-    chart: dict
-    user_message: str
-    name: str = "User"
-
-@app.post("/chat")
-async def chat_with_sayu(request: ChatRequest):
-    try:
-        # Simple rule-based gentle response for now (no OpenAI needed)
-        day_master = request.chart.get("day_master", "Unknown")
-        
-        response_text = f"""Hello {request.name},
-
-Thank you for sharing. From your Saju chart, your Day Master is **{day_master}**.
-
-Your message: "{request.user_message}"
-
-This may be highlighting a pattern worth reflecting on gently. 
-What feelings or situations are coming up for you right now?
-
-I'm here to listen without judgment. Would you like to explore this further?"""
-
-        return {
-            "status": "success",
-            "response": response_text,
-            "note": "This is a basic reflective response. You can upgrade to OpenAI later."
-        }
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
 @app.post("/calculate-saju")
 async def calculate_saju(data: BirthData):
     try:
+        # Geocoding
         geolocator = Nominatim(user_agent="sayu_saju_app")
         try:
             loc = geolocator.geocode(data.birthplace, timeout=10)
@@ -104,10 +115,12 @@ async def calculate_saju(data: BirthData):
             longitude = 0
             location_name = data.birthplace
 
+        # True Solar Time
         solar_time_info = calculate_true_solar_time(data.year, data.month, data.day, data.hour, data.minute, longitude)
         use_hour = solar_time_info["corrected_hour"]
         use_minute = solar_time_info["corrected_minute"]
 
+        # Chart Calculation
         if data.is_lunar:
             lunar = Lunar.fromYMDHMS(data.year, data.month, data.day, use_hour, use_minute, 0)
             solar = lunar.getSolar()
@@ -118,6 +131,7 @@ async def calculate_saju(data: BirthData):
         eight_char = lunar.getEightChar()
         day_master_stem = eight_char.getDayGan()
 
+        # Pillars
         pillar_info = [
             ("year", eight_char.getYearGan(), eight_char.getYearZhi(), eight_char.getYearHideGan()),
             ("month", eight_char.getMonthGan(), eight_char.getMonthZhi(), eight_char.getMonthHideGan()),
@@ -136,6 +150,17 @@ async def calculate_saju(data: BirthData):
                 "hidden_stems": hidden_stems
             }
 
+        # Elements
+        all_stems = [p["stem"] for p in pillars.values()] + [hs for p in pillars.values() for hs in p.get("hidden_stems", [])]
+        elements = {el: all_stems.count(st) for st, el in element_map.items() if st in all_stems}
+
+        # Advanced Reflection Prompts
+        reflection_prompts = generate_reflection_prompts({
+            "day_master": day_master_stem,
+            "pillars": pillars,
+            "five_elements": elements
+        })
+
         response = {
             "status": "success",
             "gentle_note": "This chart is a gentle mirror for self-reflection and personal growth.",
@@ -148,6 +173,8 @@ async def calculate_saju(data: BirthData):
             "true_solar_time": solar_time_info,
             "pillars": pillars,
             "day_master": day_master_stem,
+            "five_elements": elements,
+            "reflection_prompts": reflection_prompts,
             "timestamp": datetime.now().isoformat()
         }
 
