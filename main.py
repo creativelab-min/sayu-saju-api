@@ -27,7 +27,7 @@ element_map = {
     "庚":"Metal", "辛":"Metal", "壬":"Water", "癸":"Water"
 }
 
-# === COMPLETE TEN GODS MAPPING ===
+# === COMPLETE TEN GODS ===
 ten_gods_full = {
     "甲": {"甲": "Friend (比肩)", "乙": "Rob Wealth (劫财)", "丙": "Eating God (食神)", "丁": "Hurting Officer (伤官)",
            "戊": "Indirect Wealth (偏财)", "己": "Direct Wealth (正财)", "庚": "Seven Killings (七杀)", "辛": "Direct Officer (正官)",
@@ -90,21 +90,18 @@ def analyze_luck_cycle_interactions(natal_branches, luck_cycles):
 def calculate_true_solar_time(year, month, day, hour, minute, longitude):
     dt = datetime(year, month, day, hour, minute)
     long_correction_min = longitude * 4.0
-    
     day_of_year = dt.timetuple().tm_yday
     gamma = 2 * math.pi / 365 * (day_of_year - 1)
     eqtime = 229.18 * (0.000075 + 0.001868 * math.cos(gamma) - 0.032077 * math.sin(gamma) 
                        - 0.014615 * math.cos(2*gamma) - 0.04089 * math.sin(2*gamma))
-    
-    total_correction_min = max(min(long_correction_min + eqtime, 40), -40)
-    solar_dt = dt + timedelta(minutes=total_correction_min)
-    
+    total = max(min(long_correction_min + eqtime, 40), -40)
+    solar_dt = dt + timedelta(minutes=total)
     return {
         "original_time": f"{hour:02d}:{minute:02d}",
         "corrected_hour": solar_dt.hour,
         "corrected_minute": solar_dt.minute,
         "corrected_time": f"{solar_dt.hour:02d}:{solar_dt.minute:02d}",
-        "total_correction_min": round(total_correction_min, 2),
+        "total_correction_min": round(total, 2),
         "note": "Realistic capped True Solar Time"
     }
 
@@ -134,6 +131,7 @@ async def calculate_saju(data: BirthData):
 
         # True Solar Time
         solar_time_info = calculate_true_solar_time(data.year, data.month, data.day, data.hour, data.minute, longitude)
+
         use_hour = solar_time_info["corrected_hour"]
         use_minute = solar_time_info["corrected_minute"]
 
