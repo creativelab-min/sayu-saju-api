@@ -61,6 +61,37 @@ class BirthData(BaseModel):
     birthplace: str = "Vancouver, Canada"
     is_lunar: bool = False
 
+class ChatRequest(BaseModel):
+    chart: dict
+    user_message: str
+    name: str = "User"
+
+@app.post("/chat")
+async def chat_with_sayu(request: ChatRequest):
+    try:
+        # Simple rule-based gentle response for now (no OpenAI needed)
+        day_master = request.chart.get("day_master", "Unknown")
+        
+        response_text = f"""Hello {request.name},
+
+Thank you for sharing. From your Saju chart, your Day Master is **{day_master}**.
+
+Your message: "{request.user_message}"
+
+This may be highlighting a pattern worth reflecting on gently. 
+What feelings or situations are coming up for you right now?
+
+I'm here to listen without judgment. Would you like to explore this further?"""
+
+        return {
+            "status": "success",
+            "response": response_text,
+            "note": "This is a basic reflective response. You can upgrade to OpenAI later."
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/calculate-saju")
 async def calculate_saju(data: BirthData):
     try:
