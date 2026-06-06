@@ -100,7 +100,6 @@ def calculate_true_solar_time(year, month, day, hour, minute, longitude):
         "original_time": f"{hour:02d}:{minute:02d}",
         "corrected_hour": solar_dt.hour,
         "corrected_minute": solar_dt.minute,
-        "corrected_time": f"{solar_dt.hour:02d}:{solar_dt.minute:02d}",
         "total_correction_min": round(total, 2),
         "note": "Realistic capped True Solar Time"
     }
@@ -146,7 +145,7 @@ async def calculate_saju(data: BirthData):
         eight_char = lunar.getEightChar()
         day_master_stem = eight_char.getDayGan()
 
-        # Pillars with Hidden Stem Ten Gods
+        # Pillars
         pillar_info = [
             ("year", eight_char.getYearGan(), eight_char.getYearZhi(), eight_char.getYearHideGan()),
             ("month", eight_char.getMonthGan(), eight_char.getMonthZhi(), eight_char.getMonthHideGan()),
@@ -192,7 +191,6 @@ async def calculate_saju(data: BirthData):
                 "branch_english": branch_english.get(gz[1], gz[1])
             })
 
-        # Luck Cycle Interactions
         luck_interactions = analyze_luck_cycle_interactions(natal_branches, luck_cycles)
 
         response = {
