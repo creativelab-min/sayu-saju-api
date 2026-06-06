@@ -27,128 +27,38 @@ element_map = {
     "庚":"Metal", "辛":"Metal", "壬":"Water", "癸":"Water"
 }
 
-# === FULL TEN GODS WITH DESCRIPTIONS (All 10 Day Masters) ===
+# === COMPLETE TEN GODS MAPPING ===
 ten_gods_full = {
-    "甲": {  # Yang Wood
-        "甲": {"name": "Friend (比肩)", "description": "Self-support, independence, strong personal will."},
-        "乙": {"name": "Rob Wealth (劫财)", "description": "Competitiveness, sharing resources, sibling-like rivalry."},
-        "丙": {"name": "Eating God (食神)", "description": "Creativity, enjoyment, talent, relaxation."},
-        "丁": {"name": "Hurting Officer (伤官)", "description": "Rebellion, charisma, innovation, bold expression."},
-        "戊": {"name": "Indirect Wealth (偏财)", "description": "Opportunities, side income, entrepreneurship."},
-        "己": {"name": "Direct Wealth (正财)", "description": "Stable resources, responsibility, steady progress."},
-        "庚": {"name": "Seven Killings (七杀)", "description": "Drive, pressure, leadership, transformation."},
-        "辛": {"name": "Direct Officer (正官)", "description": "Structure, discipline, ethics, authority."},
-        "壬": {"name": "Indirect Resource (偏印)", "description": "Intuition, unconventional learning, insight."},
-        "癸": {"name": "Direct Resource (正印)", "description": "Support, wisdom, education, nurturing."}
-    },
-    "乙": {  # Yin Wood
-        "甲": {"name": "Rob Wealth (劫财)", "description": "Competitiveness, sharing resources."},
-        "乙": {"name": "Friend (比肩)", "description": "Self-support, independence."},
-        "丙": {"name": "Hurting Officer (伤官)", "description": "Rebellion, charisma, innovation."},
-        "丁": {"name": "Eating God (食神)", "description": "Creativity, enjoyment, talent."},
-        "戊": {"name": "Direct Wealth (正财)", "description": "Stable resources, responsibility."},
-        "己": {"name": "Indirect Wealth (偏财)", "description": "Opportunities, entrepreneurship."},
-        "庚": {"name": "Direct Officer (正官)", "description": "Structure, discipline, ethics."},
-        "辛": {"name": "Seven Killings (七杀)", "description": "Drive, pressure, leadership."},
-        "壬": {"name": "Direct Resource (正印)", "description": "Support, wisdom, nurturing."},
-        "癸": {"name": "Indirect Resource (偏印)", "description": "Intuition, unconventional insight."}
-    },
-    "丙": {  # Yang Fire
-        "甲": {"name": "Direct Resource (正印)", "description": "Support, wisdom, nurturing."},
-        "乙": {"name": "Indirect Resource (偏印)", "description": "Intuition, unconventional learning."},
-        "丙": {"name": "Friend (比肩)", "description": "Self-support, independence."},
-        "丁": {"name": "Rob Wealth (劫财)", "description": "Competitiveness, sharing."},
-        "戊": {"name": "Eating God (食神)", "description": "Creativity, enjoyment."},
-        "己": {"name": "Hurting Officer (伤官)", "description": "Rebellion, charisma."},
-        "庚": {"name": "Indirect Wealth (偏财)", "description": "Opportunities, entrepreneurship."},
-        "辛": {"name": "Direct Wealth (正财)", "description": "Stable resources, responsibility."},
-        "壬": {"name": "Seven Killings (七杀)", "description": "Drive, pressure, leadership."},
-        "癸": {"name": "Direct Officer (正官)", "description": "Structure, discipline."}
-    },
-    "丁": {  # Yin Fire
-        "甲": {"name": "Indirect Resource (偏印)", "description": "Intuition, unconventional insight."},
-        "乙": {"name": "Direct Resource (正印)", "description": "Support, wisdom, nurturing."},
-        "丙": {"name": "Rob Wealth (劫财)", "description": "Competitiveness, sharing."},
-        "丁": {"name": "Friend (比肩)", "description": "Self-support, independence."},
-        "戊": {"name": "Hurting Officer (伤官)", "description": "Rebellion, charisma."},
-        "己": {"name": "Eating God (食神)", "description": "Creativity, enjoyment."},
-        "庚": {"name": "Direct Wealth (正财)", "description": "Stable resources."},
-        "辛": {"name": "Indirect Wealth (偏财)", "description": "Opportunities, entrepreneurship."},
-        "壬": {"name": "Direct Officer (正官)", "description": "Structure, discipline."},
-        "癸": {"name": "Seven Killings (七杀)", "description": "Drive, pressure, leadership."}
-    },
-    "戊": {  # Yang Earth
-        "甲": {"name": "Seven Killings (七杀)", "description": "Drive, pressure, leadership."},
-        "乙": {"name": "Direct Officer (正官)", "description": "Structure, discipline."},
-        "丙": {"name": "Direct Resource (正印)", "description": "Support, wisdom."},
-        "丁": {"name": "Indirect Resource (偏印)", "description": "Intuition, insight."},
-        "戊": {"name": "Friend (比肩)", "description": "Self-support, independence."},
-        "己": {"name": "Rob Wealth (劫财)", "description": "Competitiveness, sharing."},
-        "庚": {"name": "Eating God (食神)", "description": "Creativity, enjoyment."},
-        "辛": {"name": "Hurting Officer (伤官)", "description": "Rebellion, charisma."},
-        "壬": {"name": "Indirect Wealth (偏财)", "description": "Opportunities."},
-        "癸": {"name": "Direct Wealth (正财)", "description": "Stable resources."}
-    },
-    "己": {  # Yin Earth
-        "甲": {"name": "Direct Officer (正官)", "description": "Structure, discipline."},
-        "乙": {"name": "Seven Killings (七杀)", "description": "Drive, pressure, leadership."},
-        "丙": {"name": "Indirect Resource (偏印)", "description": "Intuition, insight."},
-        "丁": {"name": "Direct Resource (正印)", "description": "Support, wisdom."},
-        "戊": {"name": "Rob Wealth (劫财)", "description": "Competitiveness."},
-        "己": {"name": "Friend (比肩)", "description": "Self-support, independence."},
-        "庚": {"name": "Hurting Officer (伤官)", "description": "Rebellion, charisma."},
-        "辛": {"name": "Eating God (食神)", "description": "Creativity, enjoyment."},
-        "壬": {"name": "Direct Wealth (正财)", "description": "Stable resources."},
-        "癸": {"name": "Indirect Wealth (偏财)", "description": "Opportunities."}
-    },
-    "庚": {  # Yang Metal
-        "甲": {"name": "Indirect Wealth (偏财)", "description": "Opportunities, entrepreneurship."},
-        "乙": {"name": "Direct Wealth (正财)", "description": "Stable resources, responsibility."},
-        "丙": {"name": "Seven Killings (七杀)", "description": "Drive, pressure, leadership."},
-        "丁": {"name": "Direct Officer (正官)", "description": "Structure, discipline."},
-        "戊": {"name": "Direct Resource (正印)", "description": "Support, wisdom."},
-        "己": {"name": "Indirect Resource (偏印)", "description": "Intuition, insight."},
-        "庚": {"name": "Friend (比肩)", "description": "Self-support, independence."},
-        "辛": {"name": "Rob Wealth (劫财)", "description": "Competitiveness, sharing."},
-        "壬": {"name": "Eating God (食神)", "description": "Creativity, enjoyment."},
-        "癸": {"name": "Hurting Officer (伤官)", "description": "Rebellion, charisma."}
-    },
-    "辛": {  # Yin Metal
-        "甲": {"name": "Direct Wealth (正财)", "description": "Stable resources, responsibility."},
-        "乙": {"name": "Indirect Wealth (偏财)", "description": "Opportunities, entrepreneurship."},
-        "丙": {"name": "Direct Officer (正官)", "description": "Structure, discipline."},
-        "丁": {"name": "Seven Killings (七杀)", "description": "Drive, pressure, leadership."},
-        "戊": {"name": "Indirect Resource (偏印)", "description": "Intuition, insight."},
-        "己": {"name": "Direct Resource (正印)", "description": "Support, wisdom."},
-        "庚": {"name": "Rob Wealth (劫财)", "description": "Competitiveness, sharing."},
-        "辛": {"name": "Friend (比肩)", "description": "Self-support, independence."},
-        "壬": {"name": "Hurting Officer (伤官)", "description": "Rebellion, charisma."},
-        "癸": {"name": "Eating God (食神)", "description": "Creativity, enjoyment."}
-    },
-    "壬": {  # Yang Water
-        "甲": {"name": "Eating God (食神)", "description": "Creativity, enjoyment."},
-        "乙": {"name": "Hurting Officer (伤官)", "description": "Rebellion, charisma."},
-        "丙": {"name": "Indirect Wealth (偏财)", "description": "Opportunities, entrepreneurship."},
-        "丁": {"name": "Direct Wealth (正财)", "description": "Stable resources."},
-        "戊": {"name": "Seven Killings (七杀)", "description": "Drive, pressure, leadership."},
-        "己": {"name": "Direct Officer (正官)", "description": "Structure, discipline."},
-        "庚": {"name": "Direct Resource (正印)", "description": "Support, wisdom."},
-        "辛": {"name": "Indirect Resource (偏印)", "description": "Intuition, insight."},
-        "壬": {"name": "Friend (比肩)", "description": "Self-support, independence."},
-        "癸": {"name": "Rob Wealth (劫财)", "description": "Competitiveness, sharing."}
-    },
-    "癸": {  # Yin Water
-        "甲": {"name": "Hurting Officer (伤官)", "description": "Rebellion, charisma."},
-        "乙": {"name": "Eating God (食神)", "description": "Creativity, enjoyment."},
-        "丙": {"name": "Direct Wealth (正财)", "description": "Stable resources."},
-        "丁": {"name": "Indirect Wealth (偏财)", "description": "Opportunities."},
-        "戊": {"name": "Direct Officer (正官)", "description": "Structure, discipline."},
-        "己": {"name": "Seven Killings (七杀)", "description": "Drive, pressure, leadership."},
-        "庚": {"name": "Indirect Resource (偏印)", "description": "Intuition, insight."},
-        "辛": {"name": "Direct Resource (正印)", "description": "Support, wisdom."},
-        "壬": {"name": "Rob Wealth (劫财)", "description": "Competitiveness, sharing."},
-        "癸": {"name": "Friend (比肩)", "description": "Self-support, independence."}
-    }
+    "甲": {"甲": "Friend (比肩)", "乙": "Rob Wealth (劫财)", "丙": "Eating God (食神)", "丁": "Hurting Officer (伤官)",
+           "戊": "Indirect Wealth (偏财)", "己": "Direct Wealth (正财)", "庚": "Seven Killings (七杀)", "辛": "Direct Officer (正官)",
+           "壬": "Indirect Resource (偏印)", "癸": "Direct Resource (正印)"},
+    "乙": {"甲": "Rob Wealth (劫财)", "乙": "Friend (比肩)", "丙": "Hurting Officer (伤官)", "丁": "Eating God (食神)",
+           "戊": "Direct Wealth (正财)", "己": "Indirect Wealth (偏财)", "庚": "Direct Officer (正官)", "辛": "Seven Killings (七杀)",
+           "壬": "Direct Resource (正印)", "癸": "Indirect Resource (偏印)"},
+    "丙": {"甲": "Direct Resource (正印)", "乙": "Indirect Resource (偏印)", "丙": "Friend (比肩)", "丁": "Rob Wealth (劫财)",
+           "戊": "Eating God (食神)", "己": "Hurting Officer (伤官)", "庚": "Indirect Wealth (偏财)", "辛": "Direct Wealth (正财)",
+           "壬": "Seven Killings (七杀)", "癸": "Direct Officer (正官)"},
+    "丁": {"甲": "Indirect Resource (偏印)", "乙": "Direct Resource (正印)", "丙": "Rob Wealth (劫财)", "丁": "Friend (比肩)",
+           "戊": "Hurting Officer (伤官)", "己": "Eating God (食神)", "庚": "Direct Wealth (正财)", "辛": "Indirect Wealth (偏财)",
+           "壬": "Direct Officer (正官)", "癸": "Seven Killings (七杀)"},
+    "戊": {"甲": "Seven Killings (七杀)", "乙": "Direct Officer (正官)", "丙": "Direct Resource (正印)", "丁": "Indirect Resource (偏印)",
+           "戊": "Friend (比肩)", "己": "Rob Wealth (劫财)", "庚": "Eating God (食神)", "辛": "Hurting Officer (伤官)",
+           "壬": "Indirect Wealth (偏财)", "癸": "Direct Wealth (正财)"},
+    "己": {"甲": "Direct Officer (正官)", "乙": "Seven Killings (七杀)", "丙": "Indirect Resource (偏印)", "丁": "Direct Resource (正印)",
+           "戊": "Rob Wealth (劫财)", "己": "Friend (比肩)", "庚": "Hurting Officer (伤官)", "辛": "Eating God (食神)",
+           "壬": "Direct Wealth (正财)", "癸": "Indirect Wealth (偏财)"},
+    "庚": {"甲": "Indirect Wealth (偏财)", "乙": "Direct Wealth (正财)", "丙": "Seven Killings (七杀)", "丁": "Direct Officer (正官)",
+           "戊": "Direct Resource (正印)", "己": "Indirect Resource (偏印)", "庚": "Friend (比肩)", "辛": "Rob Wealth (劫财)",
+           "壬": "Eating God (食神)", "癸": "Hurting Officer (伤官)"},
+    "辛": {"甲": "Direct Wealth (正财)", "乙": "Indirect Wealth (偏财)", "丙": "Direct Officer (正官)", "丁": "Seven Killings (七杀)",
+           "戊": "Indirect Resource (偏印)", "己": "Direct Resource (正印)", "庚": "Rob Wealth (劫财)", "辛": "Friend (比肩)",
+           "壬": "Hurting Officer (伤官)", "癸": "Eating God (食神)"},
+    "壬": {"甲": "Eating God (食神)", "乙": "Hurting Officer (伤官)", "丙": "Indirect Wealth (偏财)", "丁": "Direct Wealth (正财)",
+           "戊": "Seven Killings (七杀)", "己": "Direct Officer (正官)", "庚": "Direct Resource (正印)", "辛": "Indirect Resource (偏印)",
+           "壬": "Friend (比肩)", "癸": "Rob Wealth (劫财)"},
+    "癸": {"甲": "Hurting Officer (伤官)", "乙": "Eating God (食神)", "丙": "Direct Wealth (正财)", "丁": "Indirect Wealth (偏财)",
+           "戊": "Direct Officer (正官)", "己": "Seven Killings (七杀)", "庚": "Indirect Resource (偏印)", "辛": "Direct Resource (正印)",
+           "壬": "Rob Wealth (劫财)", "癸": "Friend (比肩)"}
 }
 
 # === INTERACTION RULES ===
@@ -222,7 +132,7 @@ async def calculate_saju(data: BirthData):
         use_hour = int(solar_time_info["corrected_time"].split(":")[0])
         use_minute = int(solar_time_info["corrected_time"].split(":")[1])
 
-        # Chart
+        # Chart Calculation
         if data.is_lunar:
             lunar = Lunar.fromYMDHMS(data.year, data.month, data.day, use_hour, use_minute, 0)
             solar = lunar.getSolar()
@@ -233,7 +143,7 @@ async def calculate_saju(data: BirthData):
         eight_char = lunar.getEightChar()
         day_master_stem = eight_char.getDayGan()
 
-        # Pillars
+        # Pillars with Hidden Stem Ten Gods
         pillar_info = [
             ("year", eight_char.getYearGan(), eight_char.getYearZhi(), eight_char.getYearHideGan()),
             ("month", eight_char.getMonthGan(), eight_char.getMonthZhi(), eight_char.getMonthHideGan()),
@@ -245,13 +155,18 @@ async def calculate_saju(data: BirthData):
         natal_branches = {}
         for name, stem, branch, hidden in pillar_info:
             hidden_stems = list(hidden) if hidden else []
+            hidden_ten_gods = [ten_gods_full.get(day_master_stem, {}).get(hs, "N/A") for hs in hidden_stems]
+            
             natal_branches[name] = branch
             pillars[name] = {
                 "stem": stem,
                 "stem_english": stem_english.get(stem, stem),
                 "branch": branch,
                 "branch_english": branch_english.get(branch, branch),
-                "hidden_stems": hidden_stems
+                "hidden_stems": hidden_stems,
+                "hidden_stems_english": [stem_english.get(h, h) for h in hidden_stems],
+                "ten_god": ten_gods_full.get(day_master_stem, {}).get(stem, "N/A"),
+                "hidden_ten_gods": hidden_ten_gods
             }
 
         # Elements
