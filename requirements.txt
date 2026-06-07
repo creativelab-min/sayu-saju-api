@@ -4,3 +4,4 @@ lunar-python
 geopy
 pydantic>=2.0
 pytz
+pytest
