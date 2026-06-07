@@ -6,7 +6,10 @@ from geopy.exc import GeocoderServiceError, GeocoderTimedOut, GeocoderUnavailabl
 from geopy.geocoders import Nominatim
 from typing import Annotated, Literal
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+import logging
 import math
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Sayu Saju API", description="Gentle mirror for self-understanding")
 
@@ -269,8 +272,9 @@ async def calculate_saju(data: BirthData):
 
     except HTTPException:
         raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Calculation error: {str(e)}")
+    except Exception:
+        logger.exception("Unexpected error while calculating Saju chart")
+        raise HTTPException(status_code=500, detail="Unable to calculate Saju chart at this time.")
 
 @app.get("/health")
 async def health():
