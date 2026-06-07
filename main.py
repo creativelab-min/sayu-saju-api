@@ -63,32 +63,45 @@ ten_gods_full = {
            "壬": "Rob Wealth", "癸": "Friend"}
 }
 
-def calculate_true_solar_time(year, month, day, hour, minute, longitude):
-    dt = datetime(year, month, day, hour, minute)
-    
-    # 1. Calculate the base Standard Time Meridian for the birthplace
-    # (Rounding longitude to the nearest 15-degree increment maps to their local timezone)
-    standard_meridian = round(longitude / 15.0) * 15.0
-    
-    # 2. Local deviation from standard time meridian (4 minutes per degree)
+def calculate_true_solar_time(year, month, day, hour, minute, longitude, timezone_name):
+    timezone = ZoneInfo(timezone_name)
+    local_dt = datetime(year, month, day, hour, minute, tzinfo=timezone)
+    utc_offset = local_dt.utcoffset()
+    dst_offset = local_dt.dst()
+    if utc_offset is None:
+        raise ValueError("timezone offset could not be resolved for birth datetime")
+
+    # Civil time is anchored to the timezone's historical UTC offset at birth,
+    # including DST when it was in effect.
+    utc_offset_hours = utc_offset.total_seconds() / 3600
+    standard_meridian = utc_offset_hours * 15.0
+
+    # Local deviation from the civil-time meridian (4 minutes per degree).
     long_correction_min = (longitude - standard_meridian) * 4.0
-    
-    # 3. Equation of Time (EoT) calculation for earth's orbital variance
-    day_of_year = dt.timetuple().tm_yday
+
+    # Equation of Time (EoT) calculation for earth's orbital variance.
+    day_of_year = local_dt.timetuple().tm_yday
     gamma = 2 * math.pi / 365 * (day_of_year - 1)
-    eqtime = 229.18 * (0.000075 + 0.001868 * math.cos(gamma) - 0.032077 * math.sin(gamma) 
+    eqtime = 229.18 * (0.000075 + 0.001868 * math.cos(gamma) - 0.032077 * math.sin(gamma)
                        - 0.014615 * math.cos(2*gamma) - 0.04089 * math.sin(2*gamma))
-    
-    # Total correction safely adjusted (typically between -30 and +30 minutes)
+
     total_correction = long_correction_min + eqtime
-    solar_dt = dt + timedelta(minutes=total_correction)
-    
+    solar_dt = local_dt + timedelta(minutes=total_correction)
+
     return {
         "original_time": f"{hour:02d}:{minute:02d}",
+        "original_datetime": local_dt.isoformat(),
+        "corrected_datetime": solar_dt.isoformat(),
         "corrected_hour": solar_dt.hour,
         "corrected_minute": solar_dt.minute,
         "total_correction_min": round(total_correction, 2),
-        "note": f"True Solar Time computed relative to Standard Meridian {standard_meridian}°"
+        "longitude_correction_min": round(long_correction_min, 2),
+        "equation_of_time_min": round(eqtime, 2),
+        "utc_offset_hours": round(utc_offset_hours, 2),
+        "dst_offset_min": round((dst_offset.total_seconds() / 60) if dst_offset else 0, 2),
+        "standard_meridian": round(standard_meridian, 2),
+        "timezone": timezone_name,
+        "note": f"True Solar Time computed using historical timezone offset for {timezone_name}"
     }
 
 class BirthData(BaseModel):
@@ -158,7 +171,15 @@ async def calculate_saju(data: BirthData):
         timezone = data.timezone
         location_name, birthplace_lookup_status = enrich_birthplace(data.birthplace)
 
-        solar_time_info = calculate_true_solar_time(data.year, data.month, data.day, data.hour, data.minute, longitude)
+        solar_time_info = calculate_true_solar_time(
+            data.year,
+            data.month,
+            data.day,
+            data.hour,
+            data.minute,
+            longitude,
+            timezone,
+        )
         use_hour = solar_time_info["corrected_hour"]
         use_minute = solar_time_info["corrected_minute"]
 
