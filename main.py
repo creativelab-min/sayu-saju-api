@@ -105,19 +105,38 @@ def calculate_true_solar_time(year, month, day, hour, minute, longitude, timezon
     }
 
 class BirthData(BaseModel):
-    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    model_config = ConfigDict(
+        extra="forbid",
+        str_strip_whitespace=True,
+        json_schema_extra={
+            "example": {
+                "name": "User",
+                "year": 1990,
+                "month": 6,
+                "day": 15,
+                "hour": 12,
+                "minute": 0,
+                "gender": "female",
+                "birthplace": "Seoul, South Korea",
+                "latitude": 37.5665,
+                "longitude": 126.9780,
+                "timezone": "Asia/Seoul",
+                "is_lunar": False
+            }
+        },
+    )
 
-    name: Annotated[str, Field(default="User", min_length=1, max_length=80)]
-    year: Annotated[StrictInt, Field(ge=1900, le=2100)]
-    month: Annotated[StrictInt, Field(ge=1, le=12)]
-    day: Annotated[StrictInt, Field(ge=1, le=31)]
-    hour: Annotated[StrictInt, Field(default=12, ge=0, le=23)]
-    minute: Annotated[StrictInt, Field(default=0, ge=0, le=59)]
+    name: Annotated[str, Field(default="User", min_length=1, max_length=80, examples=["User"])]
+    year: Annotated[StrictInt, Field(ge=1900, le=2100, examples=[1990])]
+    month: Annotated[StrictInt, Field(ge=1, le=12, examples=[6])]
+    day: Annotated[StrictInt, Field(ge=1, le=31, examples=[15])]
+    hour: Annotated[StrictInt, Field(default=12, ge=0, le=23, examples=[12])]
+    minute: Annotated[StrictInt, Field(default=0, ge=0, le=59, examples=[0])]
     gender: Literal["female", "male", "nonbinary", "other"] = "female"
-    birthplace: Annotated[str, Field(min_length=2, max_length=120)] | None = None
-    latitude: Annotated[StrictFloat, Field(ge=-90, le=90)]
-    longitude: Annotated[StrictFloat, Field(ge=-180, le=180)]
-    timezone: Annotated[str, Field(min_length=1, max_length=64)]
+    birthplace: Annotated[str, Field(min_length=2, max_length=120, examples=["Seoul, South Korea"])] | None = None
+    latitude: Annotated[StrictFloat, Field(ge=-90, le=90, examples=[37.5665])]
+    longitude: Annotated[StrictFloat, Field(ge=-180, le=180, examples=[126.9780])]
+    timezone: Annotated[str, Field(min_length=1, max_length=64, examples=["Asia/Seoul"])]
     is_lunar: StrictBool = False
 
     @field_validator("name", "birthplace")
