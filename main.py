@@ -92,6 +92,9 @@ def calculate_true_solar_time(year, month, day, hour, minute, longitude, timezon
         "original_time": f"{hour:02d}:{minute:02d}",
         "original_datetime": local_dt.isoformat(),
         "corrected_datetime": solar_dt.isoformat(),
+        "corrected_year": solar_dt.year,
+        "corrected_month": solar_dt.month,
+        "corrected_day": solar_dt.day,
         "corrected_hour": solar_dt.hour,
         "corrected_minute": solar_dt.minute,
         "total_correction_min": round(total_correction, 2),
@@ -199,15 +202,18 @@ async def calculate_saju(data: BirthData):
             longitude,
             timezone,
         )
+        use_year = solar_time_info["corrected_year"]
+        use_month = solar_time_info["corrected_month"]
+        use_day = solar_time_info["corrected_day"]
         use_hour = solar_time_info["corrected_hour"]
         use_minute = solar_time_info["corrected_minute"]
 
         # Chart Calculation
         if data.is_lunar:
-            lunar = Lunar.fromYMDHMS(data.year, data.month, data.day, use_hour, use_minute, 0)
+            lunar = Lunar.fromYMDHMS(use_year, use_month, use_day, use_hour, use_minute, 0)
             solar = lunar.getSolar()
         else:
-            solar = Solar.fromYmdHms(data.year, data.month, data.day, use_hour, use_minute, 0)
+            solar = Solar.fromYmdHms(use_year, use_month, use_day, use_hour, use_minute, 0)
             lunar = solar.getLunar()
 
         eight_char = lunar.getEightChar()
