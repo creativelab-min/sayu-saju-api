@@ -1,8 +1,9 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, field_validator, model_validator
 from datetime import datetime, timedelta
 from lunar_python import Solar, Lunar
 from geopy.geocoders import Nominatim
+from typing import Annotated, Literal
 import math
 
 app = FastAPI(title="Sayu Saju API", description="Gentle mirror for self-understanding")
@@ -89,15 +90,33 @@ def calculate_true_solar_time(year, month, day, hour, minute, longitude):
     }
 
 class BirthData(BaseModel):
-    name: str = "User"
-    year: int
-    month: int
-    day: int
-    hour: int = 12
-    minute: int = 0
-    gender: str = "female"
-    birthplace: str = "Seoul, Korea"
-    is_lunar: bool = False
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    name: Annotated[str, Field(default="User", min_length=1, max_length=80)]
+    year: Annotated[StrictInt, Field(ge=1900, le=2100)]
+    month: Annotated[StrictInt, Field(ge=1, le=12)]
+    day: Annotated[StrictInt, Field(ge=1, le=31)]
+    hour: Annotated[StrictInt, Field(default=12, ge=0, le=23)]
+    minute: Annotated[StrictInt, Field(default=0, ge=0, le=59)]
+    gender: Literal["female", "male", "nonbinary", "other"] = "female"
+    birthplace: Annotated[str, Field(default="Seoul, Korea", min_length=2, max_length=120)]
+    is_lunar: StrictBool = False
+
+    @field_validator("name", "birthplace")
+    @classmethod
+    def validate_text_field(cls, value: str) -> str:
+        cleaned = " ".join(value.split())
+        if not any(char.isalnum() for char in cleaned):
+            raise ValueError("must contain at least one letter or number")
+        return cleaned
+
+    @model_validator(mode="after")
+    def validate_birth_date(self):
+        try:
+            datetime(self.year, self.month, self.day, self.hour, self.minute)
+        except ValueError as exc:
+            raise ValueError(f"invalid birth date or time: {exc}") from exc
+        return self
 
 @app.post("/calculate-saju")
 async def calculate_saju(data: BirthData):
