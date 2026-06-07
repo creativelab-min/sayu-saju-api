@@ -62,19 +62,30 @@ ten_gods_full = {
 
 def calculate_true_solar_time(year, month, day, hour, minute, longitude):
     dt = datetime(year, month, day, hour, minute)
-    long_correction_min = longitude * 4.0
+    
+    # 1. Calculate the base Standard Time Meridian for the birthplace
+    # (Rounding longitude to the nearest 15-degree increment maps to their local timezone)
+    standard_meridian = round(longitude / 15.0) * 15.0
+    
+    # 2. Local deviation from standard time meridian (4 minutes per degree)
+    long_correction_min = (longitude - standard_meridian) * 4.0
+    
+    # 3. Equation of Time (EoT) calculation for earth's orbital variance
     day_of_year = dt.timetuple().tm_yday
     gamma = 2 * math.pi / 365 * (day_of_year - 1)
     eqtime = 229.18 * (0.000075 + 0.001868 * math.cos(gamma) - 0.032077 * math.sin(gamma) 
                        - 0.014615 * math.cos(2*gamma) - 0.04089 * math.sin(2*gamma))
-    total = max(min(long_correction_min + eqtime, 40), -40)
-    solar_dt = dt + timedelta(minutes=total)
+    
+    # Total correction safely adjusted (typically between -30 and +30 minutes)
+    total_correction = long_correction_min + eqtime
+    solar_dt = dt + timedelta(minutes=total_correction)
+    
     return {
         "original_time": f"{hour:02d}:{minute:02d}",
         "corrected_hour": solar_dt.hour,
         "corrected_minute": solar_dt.minute,
-        "total_correction_min": round(total, 2),
-        "note": "Realistic capped True Solar Time"
+        "total_correction_min": round(total_correction, 2),
+        "note": f"True Solar Time computed relative to Standard Meridian {standard_meridian}°"
     }
 
 class BirthData(BaseModel):
