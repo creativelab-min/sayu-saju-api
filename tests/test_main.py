@@ -1,9 +1,14 @@
 import importlib
 import sys
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
 from geopy.exc import GeocoderTimedOut
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 
 def load_app(monkeypatch, cors_origins=None):
