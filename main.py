@@ -1,9 +1,11 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictFloat, StrictInt, field_validator, model_validator
 from datetime import datetime, timedelta
 from lunar_python import Solar, Lunar
+from geopy.exc import GeocoderServiceError, GeocoderTimedOut, GeocoderUnavailable
 from geopy.geocoders import Nominatim
 from typing import Annotated, Literal
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 import math
 
 app = FastAPI(title="Sayu Saju API", description="Gentle mirror for self-understanding")
@@ -100,6 +102,9 @@ class BirthData(BaseModel):
     minute: Annotated[StrictInt, Field(default=0, ge=0, le=59)]
     gender: Literal["female", "male", "nonbinary", "other"] = "female"
     birthplace: Annotated[str, Field(default="Seoul, Korea", min_length=2, max_length=120)]
+    latitude: Annotated[StrictFloat, Field(ge=-90, le=90)] | None = None
+    longitude: Annotated[StrictFloat, Field(ge=-180, le=180)] | None = None
+    timezone: Annotated[str, Field(min_length=1, max_length=64)] | None = None
     is_lunar: StrictBool = False
 
     @field_validator("name", "birthplace")
@@ -110,26 +115,65 @@ class BirthData(BaseModel):
             raise ValueError("must contain at least one letter or number")
         return cleaned
 
+    @field_validator("timezone")
+    @classmethod
+    def validate_timezone(cls, value: str | None) -> str | None:
+        if value is None:
+            return value
+        cleaned = value.strip()
+        try:
+            ZoneInfo(cleaned)
+        except ZoneInfoNotFoundError as exc:
+            raise ValueError("timezone must be a valid IANA timezone name") from exc
+        return cleaned
+
     @model_validator(mode="after")
-    def validate_birth_date(self):
+    def validate_birth_date_and_location(self):
         try:
             datetime(self.year, self.month, self.day, self.hour, self.minute)
         except ValueError as exc:
             raise ValueError(f"invalid birth date or time: {exc}") from exc
+
+        supplied_location_parts = [
+            self.latitude is not None,
+            self.longitude is not None,
+            self.timezone is not None,
+        ]
+        if any(supplied_location_parts) and not all(supplied_location_parts):
+            raise ValueError("latitude, longitude, and timezone must be supplied together")
+
         return self
 
 @app.post("/calculate-saju")
 async def calculate_saju(data: BirthData):
     try:
-        # Geocoding
-        geolocator = Nominatim(user_agent="sayu_saju_app")
-        try:
-            loc = geolocator.geocode(data.birthplace, timeout=10)
-            longitude = round(loc.longitude, 4) if loc else 0
-            location_name = loc.address if loc else data.birthplace
-        except:
-            longitude = 0
+        if data.latitude is not None and data.longitude is not None and data.timezone is not None:
+            latitude = round(data.latitude, 4)
+            longitude = round(data.longitude, 4)
             location_name = data.birthplace
+            location_source = "trusted_request"
+            timezone = data.timezone
+        else:
+            geolocator = Nominatim(user_agent="sayu_saju_app")
+            try:
+                loc = geolocator.geocode(data.birthplace, timeout=10)
+            except (GeocoderTimedOut, GeocoderUnavailable, GeocoderServiceError):
+                raise HTTPException(
+                    status_code=503,
+                    detail="Birthplace lookup is temporarily unavailable. Please try again later or provide trusted latitude, longitude, and timezone."
+                )
+
+            if loc is None:
+                raise HTTPException(
+                    status_code=422,
+                    detail="Birthplace could not be found. Please provide a more specific birthplace or trusted latitude, longitude, and timezone."
+                )
+
+            latitude = round(loc.latitude, 4)
+            longitude = round(loc.longitude, 4)
+            location_name = loc.address
+            location_source = "geocoded"
+            timezone = None
 
         solar_time_info = calculate_true_solar_time(data.year, data.month, data.day, data.hour, data.minute, longitude)
         use_hour = solar_time_info["corrected_hour"]
@@ -180,7 +224,10 @@ async def calculate_saju(data: BirthData):
                 "name": data.name,
                 "gender": data.gender,
                 "birthplace": location_name,
-                "longitude": longitude
+                "latitude": latitude,
+                "longitude": longitude,
+                "timezone": timezone,
+                "location_source": location_source
             },
             "true_solar_time": solar_time_info,
             "pillars": pillars,
@@ -190,6 +237,8 @@ async def calculate_saju(data: BirthData):
 
         return response
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Calculation error: {str(e)}")
 
