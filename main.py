@@ -109,6 +109,7 @@ def calculate_true_solar_time(year, month, day, hour, minute, longitude, timezon
     solar_dt = local_dt + timedelta(minutes=total_correction)
 
     return {
+        "applied": True,
         "original_time": f"{hour:02d}:{minute:02d}",
         "original_datetime": local_dt.isoformat(),
         "corrected_datetime": solar_dt.isoformat(),
@@ -132,20 +133,36 @@ class BirthData(BaseModel):
         extra="forbid",
         str_strip_whitespace=True,
         json_schema_extra={
-            "example": {
-                "name": "User",
-                "year": 1990,
-                "month": 6,
-                "day": 15,
-                "hour": 12,
-                "minute": 0,
-                "gender": "female",
-                "birthplace": "Seoul, South Korea",
-                "latitude": 37.5665,
-                "longitude": 126.9780,
-                "timezone": "Asia/Seoul",
-                "is_lunar": False
-            }
+            "examples": [
+                {
+                    "name": "User",
+                    "year": 1990,
+                    "month": 6,
+                    "day": 15,
+                    "hour": 12,
+                    "minute": 0,
+                    "gender": "female",
+                    "birthplace": "Seoul, South Korea",
+                    "latitude": 37.5665,
+                    "longitude": 126.9780,
+                    "timezone": "Asia/Seoul",
+                    "is_lunar": False
+                },
+                {
+                    "name": "User",
+                    "year": 1990,
+                    "month": 6,
+                    "day": 15,
+                    "hour": None,
+                    "minute": None,
+                    "gender": "female",
+                    "birthplace": "Seoul, South Korea",
+                    "latitude": 37.5665,
+                    "longitude": 126.9780,
+                    "timezone": "Asia/Seoul",
+                    "is_lunar": False
+                }
+            ]
         },
     )
 
@@ -153,8 +170,8 @@ class BirthData(BaseModel):
     year: Annotated[StrictInt, Field(ge=1900, le=2100, examples=[1990])]
     month: Annotated[StrictInt, Field(ge=1, le=12, examples=[6])]
     day: Annotated[StrictInt, Field(ge=1, le=31, examples=[15])]
-    hour: Annotated[StrictInt, Field(default=12, ge=0, le=23, examples=[12])]
-    minute: Annotated[StrictInt, Field(default=0, ge=0, le=59, examples=[0])]
+    hour: Annotated[StrictInt, Field(ge=0, le=23, examples=[12])] | None = None
+    minute: Annotated[StrictInt, Field(ge=0, le=59, examples=[0])] | None = None
     gender: Literal["female", "male", "nonbinary", "other"] = "female"
     birthplace: Annotated[str, Field(min_length=2, max_length=120, examples=["Seoul, South Korea"])] | None = None
     latitude: Annotated[StrictFloat, Field(ge=-90, le=90, examples=[37.5665])]
@@ -184,11 +201,22 @@ class BirthData(BaseModel):
 
     @model_validator(mode="after")
     def validate_birth_date(self):
+        hour_supplied = self.hour is not None
+        minute_supplied = self.minute is not None
+        if hour_supplied != minute_supplied:
+            raise ValueError("hour and minute must both be supplied, or both omitted for Samju calculation")
+
+        validation_hour = self.hour if self.hour is not None else 12
+        validation_minute = self.minute if self.minute is not None else 0
         try:
-            datetime(self.year, self.month, self.day, self.hour, self.minute)
+            datetime(self.year, self.month, self.day, validation_hour, validation_minute)
         except ValueError as exc:
             raise ValueError(f"invalid birth date or time: {exc}") from exc
         return self
+
+    @property
+    def birth_time_known(self) -> bool:
+        return self.hour is not None and self.minute is not None
 
 def enrich_birthplace(birthplace: str | None) -> tuple[str | None, str]:
     if birthplace is None:
@@ -205,6 +233,35 @@ def enrich_birthplace(birthplace: str | None) -> tuple[str | None, str]:
 
     return loc.address, "enriched"
 
+def build_pillars(eight_char, include_hour: bool) -> dict:
+    day_master_stem = eight_char.getDayGan()
+    pillar_info = [
+        ("year", eight_char.getYearGan(), eight_char.getYearZhi(), eight_char.getYearHideGan()),
+        ("month", eight_char.getMonthGan(), eight_char.getMonthZhi(), eight_char.getMonthHideGan()),
+        ("day", eight_char.getDayGan(), eight_char.getDayZhi(), eight_char.getDayHideGan()),
+    ]
+    if include_hour:
+        pillar_info.append(("hour", eight_char.getTimeGan(), eight_char.getTimeZhi(), eight_char.getTimeHideGan()))
+
+    pillars = {}
+    for name, stem, branch, hidden in pillar_info:
+        hidden_stems = list(hidden) if hidden else []
+        ten_god = ten_gods_full.get(day_master_stem, {}).get(stem, "N/A")
+        hidden_ten_gods = [ten_gods_full.get(day_master_stem, {}).get(hs, "N/A") for hs in hidden_stems]
+
+        pillars[name] = {
+            "stem": stem,
+            "stem_english": stem_english.get(stem, stem),
+            "branch": branch,
+            "branch_english": branch_english.get(branch, branch),
+            "hidden_stems": hidden_stems,
+            "hidden_stems_english": [stem_english.get(h, h) for h in hidden_stems],
+            "ten_god": ten_god,
+            "hidden_ten_gods": hidden_ten_gods
+        }
+
+    return pillars
+
 @app.post("/calculate-saju")
 async def calculate_saju(data: BirthData):
     try:
@@ -212,23 +269,41 @@ async def calculate_saju(data: BirthData):
         longitude = round(data.longitude, 4)
         timezone = data.timezone
         location_name, birthplace_lookup_status = enrich_birthplace(data.birthplace)
+        birth_time_known = data.birth_time_known
 
-        solar_time_info = calculate_true_solar_time(
-            data.year,
-            data.month,
-            data.day,
-            data.hour,
-            data.minute,
-            longitude,
-            timezone,
-        )
-        use_year = solar_time_info["corrected_year"]
-        use_month = solar_time_info["corrected_month"]
-        use_day = solar_time_info["corrected_day"]
-        use_hour = solar_time_info["corrected_hour"]
-        use_minute = solar_time_info["corrected_minute"]
+        if birth_time_known:
+            solar_time_info = calculate_true_solar_time(
+                data.year,
+                data.month,
+                data.day,
+                data.hour,
+                data.minute,
+                longitude,
+                timezone,
+            )
+            use_year = solar_time_info["corrected_year"]
+            use_month = solar_time_info["corrected_month"]
+            use_day = solar_time_info["corrected_day"]
+            use_hour = solar_time_info["corrected_hour"]
+            use_minute = solar_time_info["corrected_minute"]
+            calculation_mode = "saju"
+            omitted_pillars = []
+            unknown_time_note = None
+        else:
+            solar_time_info = {
+                "applied": False,
+                "reason": "Birth time is unknown; true solar time requires a known hour and minute.",
+                "timezone": timezone,
+            }
+            use_year = data.year
+            use_month = data.month
+            use_day = data.day
+            use_hour = 12
+            use_minute = 0
+            calculation_mode = "samju"
+            omitted_pillars = ["hour"]
+            unknown_time_note = "Birth time is unknown, so this chart uses traditional Three Pillars (Samju / 삼주): year, month, and day only. The hour pillar is intentionally omitted."
 
-        # Chart Calculation
         if data.is_lunar:
             lunar = Lunar.fromYMDHMS(use_year, use_month, use_day, use_hour, use_minute, 0)
             solar = lunar.getSolar()
@@ -238,37 +313,15 @@ async def calculate_saju(data: BirthData):
 
         eight_char = lunar.getEightChar()
         day_master_stem = eight_char.getDayGan()
-
-        pillar_info = [
-            ("year", eight_char.getYearGan(), eight_char.getYearZhi(), eight_char.getYearHideGan()),
-            ("month", eight_char.getMonthGan(), eight_char.getMonthZhi(), eight_char.getMonthHideGan()),
-            ("day", eight_char.getDayGan(), eight_char.getDayZhi(), eight_char.getDayHideGan()),
-            ("hour", eight_char.getTimeGan(), eight_char.getTimeZhi(), eight_char.getTimeHideGan())
-        ]
-
-               # Pillars with Ten Gods + Hidden Stems
-        pillars = {}
-        for name, stem, branch, hidden in pillar_info:
-            hidden_stems = list(hidden) if hidden else []
-            # Calculate Ten God for main stem
-            ten_god = ten_gods_full.get(day_master_stem, {}).get(stem, "N/A")
-            # Calculate Ten Gods for hidden stems
-            hidden_ten_gods = [ten_gods_full.get(day_master_stem, {}).get(hs, "N/A") for hs in hidden_stems]
-
-            pillars[name] = {
-                "stem": stem,
-                "stem_english": stem_english.get(stem, stem),
-                "branch": branch,
-                "branch_english": branch_english.get(branch, branch),
-                "hidden_stems": hidden_stems,
-                "hidden_stems_english": [stem_english.get(h, h) for h in hidden_stems],
-                "ten_god": ten_god,
-                "hidden_ten_gods": hidden_ten_gods
-            }
+        pillars = build_pillars(eight_char, include_hour=birth_time_known)
 
         response = {
             "status": "success",
             "gentle_note": "This chart is a gentle mirror for self-reflection and personal growth.",
+            "calculation_mode": calculation_mode,
+            "birth_time_known": birth_time_known,
+            "omitted_pillars": omitted_pillars,
+            "unknown_time_note": unknown_time_note,
             "user_metadata": {
                 "name": data.name,
                 "gender": data.gender,
