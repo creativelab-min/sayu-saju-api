@@ -132,6 +132,33 @@ def test_chart_calculation_uses_corrected_full_date(monkeypatch):
     assert captured_args == [(1989, 7, 19, 23, 31, 0)]
 
 
+def test_unknown_birth_time_uses_samju_and_omits_hour_pillar(monkeypatch):
+    main = load_app(monkeypatch)
+    captured_args = []
+    stub_solar_chart(monkeypatch, main, captured_args)
+
+    def fail_true_solar_time(*args, **kwargs):
+        raise AssertionError("true solar time should not run without birth time")
+
+    monkeypatch.setattr(main, "calculate_true_solar_time", fail_true_solar_time)
+    client = TestClient(main.app)
+
+    response = client.post(
+        "/calculate-saju",
+        json=valid_payload(hour=None, minute=None, birthplace=None),
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["calculation_mode"] == "samju"
+    assert body["birth_time_known"] is False
+    assert body["omitted_pillars"] == ["hour"]
+    assert body["true_solar_time"]["applied"] is False
+    assert "hour" not in body["pillars"]
+    assert set(body["pillars"].keys()) == {"year", "month", "day"}
+    assert captured_args == [(1989, 7, 20, 12, 0, 0)]
+
+
 @pytest.mark.parametrize(
     ("month", "expected_offset", "expected_dst"),
     [
@@ -193,6 +220,8 @@ def test_geocoding_failure_is_non_blocking_enrichment(monkeypatch):
         {"gender": "unknown"},
         {"is_lunar": "false"},
         {"latitude": 91.0},
+        {"hour": 13, "minute": None},
+        {"hour": None, "minute": 0},
     ],
 )
 def test_invalid_input_returns_422(monkeypatch, payload_update):
